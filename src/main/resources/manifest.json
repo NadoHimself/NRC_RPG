@@ -1,60 +1,61 @@
 {
- "name": "NRC_RPG",
- "version": "1.0.0",
- "description": "MCMMO-inspired RPG skills system with combat, mining, woodcutting, farming and fishing",
- "authors": [
- "Kielian (NadoHimself)"
- ],
- "website": "https://github.com/NadoHimself/NRC_RPG",
- "main": "de.nightraid.nrcrpg.NRCRPGPlugin",
- "api_version": "0.1.0",
- "load": "STARTUP",
- "dependencies": [],
- "soft_dependencies": [],
- "permissions": {
- "nrc_rpg.use": {
- "description": "Allows using the NRC_RPG plugin",
- "default": true
- },
- "nrc_rpg.admin": {
- "description": "Grants access to admin commands",
- "default": "op"
- },
- "nrc_rpg.bypass.cooldown": {
- "description": "Bypass ability cooldowns",
- "default": "op"
- },
- "nrc_rpg.skill.combat": {
- "description": "Enables Combat skill",
- "default": true
- },
- "nrc_rpg.skill.mining": {
- "description": "Enables Mining skill",
- "default": true
- },
- "nrc_rpg.skill.woodcutting": {
- "description": "Enables Woodcutting skill",
- "default": true
- },
- "nrc_rpg.skill.farming": {
- "description": "Enables Farming skill",
- "default": true
- },
- "nrc_rpg.skill.fishing": {
- "description": "Enables Fishing skill",
- "default": true
- }
- },
- "commands": {
- "skills": {
- "description": "View your skills and levels",
- "usage": "/skills [skill] or /skills top <skill>",
- "permission": "nrc_rpg.use"
- },
- "skillsadmin": {
- "description": "Admin commands for NRC_RPG",
- "usage": "/skillsadmin <reset|set> <player> [skill] [level]",
- "permission": "nrc_rpg.admin"
- }
- }
+  "id": "nrc_rpg",
+  "name": "NRC_RPG",
+  "version": "1.0.0",
+  "description": "MCMMO-inspired RPG skills system for Hytale - Combat, Mining, Woodcutting, Farming, Fishing",
+  "author": "Kielian (NadoHimself)",
+  "authors": [
+    "Kielian"
+  ],
+  "website": "https://github.com/NadoHimself/NRC_RPG",
+  "main": "de.nightraid.nrcrpg.NRCRPGPlugin",
+  "apiVersion": "0.1.0",
+  "dependencies": [],
+  "softDependencies": [],
+  "permissions": {
+    "nrc_rpg.use": {
+      "description": "Allows using the NRC_RPG plugin",
+      "default": true
+    },
+    "nrc_rpg.admin": {
+      "description": "Allows using admin commands",
+      "default": "op"
+    },
+    "nrc_rpg.bypass.cooldown": {
+      "description": "Bypass ability cooldowns",
+      "default": "op"
+    },
+    "nrc_rpg.skill.combat": {
+      "description": "Allows using Combat skill",
+      "default": true
+    },
+    "nrc_rpg.skill.mining": {
+      "description": "Allows using Mining skill",
+      "default": true
+    },
+    "nrc_rpg.skill.woodcutting": {
+      "description": "Allows using Woodcutting skill",
+      "default": true
+    },
+    "nrc_rpg.skill.farming": {
+      "description": "Allows using Farming skill",
+      "default": true
+    },
+    "nrc_rpg.skill.fishing": {
+      "description": "Allows using Fishing skill",
+      "default": true
+    }
+  },
+  "commands": {
+    "skills": {
+      "description": "Show your skills",
+      "usage": "/skills [skill] | /skills top <skill>",
+      "permission": "nrc_rpg.use"
+    },
+    "skillsadmin": {
+      "description": "Admin commands for managing skills",
+      "usage": "/skillsadmin <action> <player> [skill] [value]",
+      "permission": "nrc_rpg.admin"
+    }
+  }
 }

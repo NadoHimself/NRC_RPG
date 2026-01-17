@@ -1,63 +1,22 @@
 {
- "prefix": "§8[§6NRC§e_§6RPG§8] §r",
- "skills": {
- "level_up": "§a§lLEVEL UP! §e{skill} §ais now Level §e{level}§a!",
- "level_up_bonus": "§7You unlocked new bonuses!",
- "xp_gained": "§7+{xp} {skill} XP",
- "xp_progress": "§e{skill}§7: §a{xp}§7/§e{required}§7 XP §8(§7{percent}%§8)",
- "max_level": "§6You reached the maximum level!",
- "overview_header": "§8===== §6Your Skills §8=====",
- "skill_line": "§e{skill}§7: §aLevel {level} §8| §7{xp}§8/§7{required} XP",
- "required_level": "§cRequires Level {level} in {skill}!",
- "skill_disabled": "§cThis skill is disabled!"
- },
- "abilities": {
- "activated": "§6{ability} §aactivated!",
- "deactivated": "§6{ability} §cdeactivated!",
- "cooldown": "§cCooldown: §e{seconds}§c seconds remaining!",
- "ready": "§a{ability} is ready!",
- "unlocked": "§aNew ability unlocked: §6{ability}§a!"
- },
- "commands": {
- "no_permission": "§cYou don't have permission!",
- "player_only": "§cOnly players can use this command!",
- "player_not_found": "§cPlayer not found: {player}",
- "invalid_skill": "§cUnknown skill: {skill}",
- "invalid_number": "§cInvalid number: {number}",
- "skills_reset": "§aReset skills of §e{player}§a!",
- "skill_set": "§aSet §e{skill}§a of §e{player}§a to Level §e{level}§a!",
- "data_saved": "§aData saved!",
- "data_loaded": "§aData loaded!"
- },
- "leaderboard": {
- "header": "§8===== §6Top 10 {skill} §8=====",
- "entry": "§e#{rank} §7{player}§8: §aLevel {level}",
- "your_rank": "§7Your rank: §e#{rank}"
- },
- "combat": {
- "bleeding": "§c{target} is bleeding!",
- "critical": "§6CRITICAL HIT!"
- },
- "mining": {
- "double_drop": "§aDouble Drop!",
- "blast_mining": "§6Blast Mining activated!"
- },
- "woodcutting": {
- "tree_feller": "§aTree Feller activated!",
- "double_drop": "§aDouble Drop!"
- },
- "farming": {
- "green_terra": "§aGreen Terra activated!",
- "auto_replant": "§7Auto-replanted!"
- },
- "fishing": {
- "treasure_found": "§6Treasure found!",
- "rare_catch": "§dRare catch!",
- "legendary_catch": "§5§lLEGENDARY CATCH!"
- },
- "errors": {
- "generic": "§cAn error occurred!",
- "data_load_failed": "§cFailed to load data!",
- "data_save_failed": "§cFailed to save data!"
- }
+  "prefix": "§8[§6NRC_RPG§8]§r ",
+  "skills.level_up": "§a§lLEVEL UP! §e{skill} §ais now Level §e{level}§a!",
+  "skills.xp_gained": "§7+{xp} {skill} XP",
+  "skills.max_level": "§cYou have already reached the maximum level!",
+  "skills.ability_activated": "§6{ability} §aactivated!",
+  "skills.ability_deactivated": "§6{ability} §cdeactivated!",
+  "skills.ability_cooldown": "§cStill {seconds} seconds cooldown!",
+  "skills.required_level": "§cRequires Level {level} in {skill}!",
+  "skills.passive_bonus": "§7Passive Bonus: §a+{bonus}%",
+  "commands.no_permission": "§cYou don't have permission for this command!",
+  "commands.only_players": "§cOnly players can use this command!",
+  "commands.player_not_found": "§cPlayer not found: {player}",
+  "commands.invalid_skill": "§cUnknown skill: {skill}",
+  "commands.invalid_number": "§cInvalid number: {number}",
+  "admin.skills_reset": "§aAll skills have been reset for {player}!",
+  "admin.level_set": "§a{skill} level has been set to {level} for {player}!",
+  "admin.xp_added": "§a{xp} XP has been added to {skill} for {player}!",
+  "data.loaded": "§aYour skill data has been loaded!",
+  "data.saved": "§7Your skill data has been saved.",
+  "data.auto_saved": "§7[Auto-Save] All player data has been saved."
 }

@@ -1,63 +1,22 @@
 {
- "prefix": "§8[§6NRC§e_§6RPG§8] §r",
- "skills": {
- "level_up": "§a§lLEVEL UP! §e{skill} §aist jetzt Level §e{level}§a!",
- "level_up_bonus": "§7Du hast neue Boni freigeschaltet!",
- "xp_gained": "§7+{xp} {skill} XP",
- "xp_progress": "§e{skill}§7: §a{xp}§7/§e{required}§7 XP §8(§7{percent}%§8)",
- "max_level": "§6Du hast das maximale Level erreicht!",
- "overview_header": "§8===== §6Deine Skills §8=====",
- "skill_line": "§e{skill}§7: §aLevel {level} §8| §7{xp}§8/§7{required} XP",
- "required_level": "§cBenötigt Level {level} in {skill}!",
- "skill_disabled": "§cDieser Skill ist deaktiviert!"
- },
- "abilities": {
- "activated": "§6{ability} §aaktiviert!",
- "deactivated": "§6{ability} §cdeaktiviert!",
- "cooldown": "§cNoch §e{seconds}§c Sekunden Cooldown!",
- "ready": "§a{ability} ist bereit!",
- "unlocked": "§aNeue Fähigkeit freigeschaltet: §6{ability}§a!"
- },
- "commands": {
- "no_permission": "§cDu hast keine Berechtigung!",
- "player_only": "§cNur Spieler können diesen Command nutzen!",
- "player_not_found": "§cSpieler nicht gefunden: {player}",
- "invalid_skill": "§cUnbekannter Skill: {skill}",
- "invalid_number": "§cUngültige Zahl: {number}",
- "skills_reset": "§aSkills von §e{player}§a zurückgesetzt!",
- "skill_set": "§aSkill §e{skill}§a von §e{player}§a auf Level §e{level}§a gesetzt!",
- "data_saved": "§aDaten gespeichert!",
- "data_loaded": "§aDaten geladen!"
- },
- "leaderboard": {
- "header": "§8===== §6Top 10 {skill} §8=====",
- "entry": "§e#{rank} §7{player}§8: §aLevel {level}",
- "your_rank": "§7Dein Rang: §e#{rank}"
- },
- "combat": {
- "bleeding": "§c{target} blutet!",
- "critical": "§6KRITISCHER TREFFER!"
- },
- "mining": {
- "double_drop": "§aDoppelter Drop!",
- "blast_mining": "§6Blast Mining aktiviert!"
- },
- "woodcutting": {
- "tree_feller": "§aTree Feller aktiviert!",
- "double_drop": "§aDoppelter Drop!"
- },
- "farming": {
- "green_terra": "§aGreen Terra aktiviert!",
- "auto_replant": "§7Automatisch nachgepflanzt!"
- },
- "fishing": {
- "treasure_found": "§6Schatz gefunden!",
- "rare_catch": "§dSeltener Fang!",
- "legendary_catch": "§5§lLEGENDÄRER FANG!"
- },
- "errors": {
- "generic": "§cEin Fehler ist aufgetreten!",
- "data_load_failed": "§cFehler beim Laden der Daten!",
- "data_save_failed": "§cFehler beim Speichern der Daten!"
- }
+  "prefix": "§8[§6NRC_RPG§8]§r ",
+  "skills.level_up": "§a§lLEVEL UP! §e{skill} §aist jetzt Level §e{level}§a!",
+  "skills.xp_gained": "§7+{xp} {skill} XP",
+  "skills.max_level": "§cDu hast bereits das maximale Level erreicht!",
+  "skills.ability_activated": "§6{ability} §aaktiviert!",
+  "skills.ability_deactivated": "§6{ability} §cdeaktiviert!",
+  "skills.ability_cooldown": "§cNoch {seconds} Sekunden Cooldown!",
+  "skills.required_level": "§cBenötigt Level {level} in {skill}!",
+  "skills.passive_bonus": "§7Passiver Bonus: §a+{bonus}%",
+  "commands.no_permission": "§cDu hast keine Berechtigung für diesen Befehl!",
+  "commands.only_players": "§cNur Spieler können diesen Befehl nutzen!",
+  "commands.player_not_found": "§cSpieler nicht gefunden: {player}",
+  "commands.invalid_skill": "§cUnbekannter Skill: {skill}",
+  "commands.invalid_number": "§cUngültige Zahl: {number}",
+  "admin.skills_reset": "§aAlle Skills wurden für {player} zurückgesetzt!",
+  "admin.level_set": "§a{skill} Level wurde auf {level} gesetzt für {player}!",
+  "admin.xp_added": "§a{xp} XP wurden zu {skill} hinzugefügt für {player}!",
+  "data.loaded": "§aDeine Skill-Daten wurden geladen!",
+  "data.saved": "§7Deine Skill-Daten wurden gespeichert.",
+  "data.auto_saved": "§7[Auto-Save] Alle Spielerdaten wurden gespeichert."
 }
