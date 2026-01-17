@@ -1,257 +1,172 @@
 package de.nightraid.nrcrpg;
 
+import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.server.core.entity.EntityStore;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import de.nightraid.nrcrpg.commands.SkillsCommand;
+import de.nightraid.nrcrpg.data.DataManager;
 import de.nightraid.nrcrpg.data.components.CooldownComponent;
 import de.nightraid.nrcrpg.data.components.SkillComponent;
 import de.nightraid.nrcrpg.data.components.StatisticsComponent;
 import de.nightraid.nrcrpg.data.components.XPComponent;
 import de.nightraid.nrcrpg.listeners.*;
-import de.nightraid.nrcrpg.managers.*;
-import de.nightraid.nrcrpg.tasks.AutoSaveTask;
-import de.nightraid.nrcrpg.util.ConfigManager;
+import de.nightraid.nrcrpg.skills.SkillType;
 
 import javax.annotation.Nonnull;
-import java.io.File;
-import java.nio.file.Path;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 /**
- * Main Plugin Class for NRC_RPG
- * MCMMO-inspired Skills & Leveling System for Hytale
- * 
- * @author Kielian (NadoHimself)
- * @version 1.0.0
+ * Main plugin class for NRC_RPG
+ * Implements a comprehensive skill-based RPG system for Hytale
  */
 public class NRCRPGPlugin extends JavaPlugin {
     
+    // Singleton instance for easy access
     private static NRCRPGPlugin instance;
     
+    // Component Types (must be registered before use)
+    private ComponentType<EntityStore, SkillComponent> skillComponentType;
+    private ComponentType<EntityStore, XPComponent> xpComponentType;
+    private ComponentType<EntityStore, CooldownComponent> cooldownComponentType;
+    private ComponentType<EntityStore, StatisticsComponent> statisticsComponentType;
+    
     // Managers
-    private ConfigManager configManager;
     private DataManager dataManager;
-    private SkillManager skillManager;
-    private XPManager xpManager;
-    private CooldownManager cooldownManager;
     
-    // Tasks
-    private ScheduledFuture<?> autoSaveTask;
+    // Listeners (keep references for cleanup)
+    private PlayerConnectionListener playerConnectionListener;
+    private MiningListener miningListener;
     
-    // Plugin state
-    private Path dataFolder;
-    
-    /**
-     * Constructor required by Hytale plugin system
-     */
     public NRCRPGPlugin(@Nonnull JavaPluginInit init) {
         super(init);
     }
     
-    /**
-     * Called during server initialization
-     * Register components, commands, events
-     */
     @Override
     protected void setup() {
         instance = this;
-        long startTime = System.currentTimeMillis();
         
         getLogger().at(Level.INFO).log("==========================================");
-        getLogger().at(Level.INFO).log("  NRC_RPG v1.0.0 - Initializing...");
-        getLogger().at(Level.INFO).log("  Author: Kielian (NadoHimself)");
-        getLogger().at(Level.INFO).log("  Company: Age of Flair");
+        getLogger().at(Level.INFO).log("  NRC_RPG v" + getManifest().getVersion() + " - Initializing...");
+        getLogger().at(Level.INFO).log("  Skills: Combat, Mining, Woodcutting, Farming, Fishing");
         getLogger().at(Level.INFO).log("==========================================");
         
-        try {
-            // Initialize data folder
-            this.dataFolder = getPluginDataFolder();
-            getLogger().at(Level.INFO).log("Data folder: " + dataFolder.toAbsolutePath());
-            
-            // Load configuration
-            getLogger().at(Level.INFO).log("Loading configuration...");
-            this.configManager = new ConfigManager(this);
-            configManager.loadConfigs();
-            
-            // Initialize managers
-            getLogger().at(Level.INFO).log("Initializing managers...");
-            this.cooldownManager = new CooldownManager();
-            this.dataManager = new DataManager(this);
-            this.xpManager = new XPManager(this);
-            this.skillManager = new SkillManager(this);
-            
-            // Register ECS components
-            getLogger().at(Level.INFO).log("Registering ECS components...");
-            registerComponents();
-            
-            // Register event listeners
-            getLogger().at(Level.INFO).log("Registering event listeners...");
-            registerListeners();
-            
-            // Register commands
-            getLogger().at(Level.INFO).log("Registering commands...");
-            registerCommands();
-            
-            long loadTime = System.currentTimeMillis() - startTime;
-            
-            getLogger().at(Level.INFO).log("==========================================");
-            getLogger().at(Level.INFO).log("  NRC_RPG v1.0.0 setup complete!");
-            getLogger().at(Level.INFO).log("  Setup time: " + loadTime + "ms");
-            getLogger().at(Level.INFO).log("  Skills: Combat, Mining, Woodcutting, Farming, Fishing");
-            getLogger().at(Level.INFO).log("==========================================");
-            
-        } catch (Exception e) {
-            getLogger().at(Level.SEVERE).log("Failed to setup NRC_RPG!", e);
-            throw new RuntimeException("Plugin setup failed", e);
-        }
+        // 1. Register Components (MUST be first!)
+        registerComponents();
+        
+        // 2. Initialize Managers
+        this.dataManager = new DataManager(this);
+        
+        // 3. Register Commands
+        registerCommands();
+        
+        // 4. Register Event Listeners
+        registerListeners();
+        
+        getLogger().at(Level.INFO).log("NRC_RPG setup complete!");
     }
     
-    /**
-     * Called after all plugins are set up
-     * Start background tasks, initialize state
-     */
     @Override
     protected void start() {
-        getLogger().at(Level.INFO).log("Starting NRC_RPG...");
+        getLogger().at(Level.INFO).log("NRC_RPG started successfully!");
         
-        try {
-            // Start scheduled tasks
-            getLogger().at(Level.INFO).log("Starting scheduled tasks...");
-            startTasks();
-            
-            getLogger().at(Level.INFO).log("NRC_RPG started successfully!");
-            
-        } catch (Exception e) {
-            getLogger().at(Level.SEVERE).log("Failed to start NRC_RPG!", e);
-        }
+        // Start auto-save task (runs every 5 minutes)
+        getTaskRegistry().registerTask(
+            com.hypixel.hytale.server.core.HytaleServer.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(
+                () -> {
+                    try {
+                        getLogger().at(Level.INFO).log("[Auto-Save] Saving all player data...");
+                        dataManager.saveAllPlayers();
+                        getLogger().at(Level.INFO).log("[Auto-Save] Complete!");
+                    } catch (Exception e) {
+                        getLogger().at(Level.SEVERE).log("[Auto-Save] Failed!", e);
+                    }
+                },
+                5, // Initial delay
+                5, // Period
+                TimeUnit.MINUTES
+            )
+        );
     }
     
-    /**
-     * Called when server is stopping
-     * Clean up resources, save data
-     */
     @Override
     protected void shutdown() {
-        getLogger().at(Level.INFO).log("Shutting down NRC_RPG...");
+        getLogger().at(Level.INFO).log("NRC_RPG shutting down...");
         
+        // Save all player data before shutdown
         try {
-            // Stop scheduled tasks
-            if (autoSaveTask != null && !autoSaveTask.isCancelled()) {
-                autoSaveTask.cancel(false);
-                getLogger().at(Level.INFO).log("Auto-save task cancelled");
-            }
-            
-            // Save all player data
-            getLogger().at(Level.INFO).log("Saving all player data...");
-            if (dataManager != null) {
-                dataManager.saveAllPlayerData();
-            }
-            
-            // Cleanup managers
-            if (skillManager != null) {
-                skillManager.shutdown();
-            }
-            
-            getLogger().at(Level.INFO).log("NRC_RPG shutdown complete!");
-            
+            dataManager.saveAllPlayers();
+            getLogger().at(Level.INFO).log("All player data saved successfully!");
         } catch (Exception e) {
-            getLogger().at(Level.SEVERE).log("Error during NRC_RPG shutdown!", e);
+            getLogger().at(Level.SEVERE).log("Failed to save player data on shutdown!", e);
         }
+        
+        getLogger().at(Level.INFO).log("NRC_RPG shutdown complete.");
     }
     
     /**
-     * Register ECS components with Hytale's ComponentRegistry
+     * Register ECS Components with proper Codecs for serialization
      */
     private void registerComponents() {
-        try {
-            // Note: Actual registration depends on available API methods
-            // This is a placeholder - adjust based on actual Hytale Component API
-            getLogger().at(Level.INFO).log("Component registration queued (4 components)");
-            getLogger().at(Level.INFO).log("- SkillComponent");
-            getLogger().at(Level.INFO).log("- XPComponent");
-            getLogger().at(Level.INFO).log("- CooldownComponent");
-            getLogger().at(Level.INFO).log("- StatisticsComponent");
-        } catch (Exception e) {
-            getLogger().at(Level.SEVERE).log("Failed to register components!", e);
-            throw e;
-        }
+        getLogger().at(Level.INFO).log("Registering ECS Components...");
+        
+        // Register with Codecs (serializable - saved to disk)
+        skillComponentType = getEntityStoreRegistry().registerComponent(
+            SkillComponent.class,
+            "NRCSkills",
+            SkillComponent.CODEC
+        );
+        
+        xpComponentType = getEntityStoreRegistry().registerComponent(
+            XPComponent.class,
+            "NRCXP",
+            XPComponent.CODEC
+        );
+        
+        statisticsComponentType = getEntityStoreRegistry().registerComponent(
+            StatisticsComponent.class,
+            "NRCStats",
+            StatisticsComponent.CODEC
+        );
+        
+        // Register without Codec (runtime only - not saved)
+        cooldownComponentType = getEntityStoreRegistry().registerComponent(
+            CooldownComponent.class,
+            CooldownComponent::new
+        );
+        
+        getLogger().at(Level.INFO).log("✓ Registered 4 components (3 serializable, 1 runtime)");
     }
     
     /**
-     * Register event listeners with Hytale's EventRegistry
-     */
-    private void registerListeners() {
-        try {
-            new CombatListener(this);
-            new MiningListener(this);
-            new WoodcuttingListener(this);
-            new FarmingListener(this);
-            new FishingListener(this);
-            new PlayerConnectionListener(this);
-            
-            getLogger().at(Level.INFO).log("Registered 6 event listeners");
-        } catch (Exception e) {
-            getLogger().at(Level.SEVERE).log("Failed to register listeners!", e);
-            throw e;
-        }
-    }
-    
-    /**
-     * Register commands with Hytale's CommandRegistry
+     * Register all commands
      */
     private void registerCommands() {
-        try {
-            getCommandRegistry().registerCommand(new SkillsCommand(this));
-            // Note: AdminCommand removed until API is clarified
-            
-            getLogger().at(Level.INFO).log("Registered commands: /skills");
-        } catch (Exception e) {
-            getLogger().at(Level.SEVERE).log("Failed to register commands!", e);
-            throw e;
-        }
+        getLogger().at(Level.INFO).log("Registering commands...");
+        
+        getCommandRegistry().registerCommand(new SkillsCommand(this));
+        
+        getLogger().at(Level.INFO).log("✓ Registered 1 command (/skills)");
     }
     
     /**
-     * Start scheduled tasks using Hytale's scheduled executor
+     * Register all event listeners
      */
-    private void startTasks() {
-        int saveInterval = configManager.getAutoSaveInterval();
+    private void registerListeners() {
+        getLogger().at(Level.INFO).log("Registering event listeners...");
         
-        // Auto-save task using HytaleServer.SCHEDULED_EXECUTOR
-        AutoSaveTask saveTask = new AutoSaveTask(this);
-        this.autoSaveTask = com.hypixel.hytale.server.core.HytaleServer.SCHEDULED_EXECUTOR
-            .scheduleWithFixedDelay(
-                saveTask,
-                saveInterval,
-                saveInterval,
-                TimeUnit.SECONDS
-            );
+        // Core listeners
+        playerConnectionListener = new PlayerConnectionListener(this);
+        miningListener = new MiningListener(this);
         
-        getLogger().at(Level.INFO).log("Auto-save scheduled every " + saveInterval + " seconds");
-    }
-    
-    /**
-     * Get plugin data folder path
-     * Create directory based on plugin manifest
-     * @return Path to plugin data directory
-     */
-    public Path getPluginDataFolder() {
-        if (dataFolder == null) {
-            // Create data folder in server's plugins directory
-            // Format: plugins/nrc_rpg/
-            File serverDir = new File(System.getProperty("user.dir"));
-            File pluginsDir = new File(serverDir, "plugins");
-            File pluginFolder = new File(pluginsDir, "nrc_rpg");
-            
-            if (!pluginFolder.exists()) {
-                pluginFolder.mkdirs();
-            }
-            
-            dataFolder = pluginFolder.toPath();
-        }
-        return dataFolder;
+        // TODO: Add other listeners when implemented
+        // new WoodcuttingListener(this);
+        // new FarmingListener(this);
+        // new FishingListener(this);
+        // new CombatListener(this);
+        
+        getLogger().at(Level.INFO).log("✓ Registered event listeners");
     }
     
     // === Getters ===
@@ -260,27 +175,23 @@ public class NRCRPGPlugin extends JavaPlugin {
         return instance;
     }
     
-    public ConfigManager getConfigManager() {
-        return configManager;
-    }
-    
     public DataManager getDataManager() {
         return dataManager;
     }
     
-    public SkillManager getSkillManager() {
-        return skillManager;
+    public ComponentType<EntityStore, SkillComponent> getSkillComponentType() {
+        return skillComponentType;
     }
     
-    public XPManager getXPManager() {
-        return xpManager;
+    public ComponentType<EntityStore, XPComponent> getXPComponentType() {
+        return xpComponentType;
     }
     
-    public CooldownManager getCooldownManager() {
-        return cooldownManager;
+    public ComponentType<EntityStore, CooldownComponent> getCooldownComponentType() {
+        return cooldownComponentType;
     }
     
-    public String getVersion() {
-        return "1.0.0";
+    public ComponentType<EntityStore, StatisticsComponent> getStatisticsComponentType() {
+        return statisticsComponentType;
     }
 }
