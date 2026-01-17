@@ -1,7 +1,7 @@
 package de.nightraid.nrcrpg.data.components;
 
-import com.hypixel.hytale.server.core.ecs.Component;
-import com.hypixel.hytale.server.core.ecs.store.entity.EntityStore;
+import com.hypixel.hytale.component.Component;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.atomic.AtomicInteger;
