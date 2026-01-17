@@ -3,7 +3,6 @@ package de.nightraid.nrcrpg.commands;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.entity.entities.Player;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
 import de.nightraid.nrcrpg.data.components.SkillComponent;
 import de.nightraid.nrcrpg.skills.SkillData;
@@ -35,26 +34,18 @@ public class SkillsCommand extends AbstractCommand {
     @Nullable
     protected CompletableFuture<Void> execute(@Nonnull CommandContext context) {
         try {
-            // Check if sender is a player
-            if (!(context.sender() instanceof Player)) {
-                context.sender().sendMessage(
-                    Message.raw("§cThis command can only be used by players!")
-                );
-                return CompletableFuture.completedFuture(null);
-            }
-            
-            Player player = (Player) context.sender();
-            
-            // TODO: Get player's SkillComponent from EntityStore
+            // CommandSender is always valid in execute method
+            // TODO: Get PlayerRef from CommandSender when API is clarified
             // For now, send placeholder message
+            
             context.sender().sendMessage(
                 Message.raw("§6§l========== Your Skills ==========")
             );
             context.sender().sendMessage(
-                Message.raw("§7Skills system integration pending...")
+                Message.raw("§77Skills system integration pending...")
             );
             context.sender().sendMessage(
-                Message.raw("§7Component access will be added once API is confirmed")
+                Message.raw("§77Component access will be added once API is confirmed")
             );
             context.sender().sendMessage(
                 Message.raw("§6§l=================================")

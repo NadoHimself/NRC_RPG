@@ -1,8 +1,8 @@
 package de.nightraid.nrcrpg.listeners;
 
-import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
+import com.hypixel.hytale.server.core.universe.PlayerRef;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
 
 import java.util.concurrent.CompletableFuture;
@@ -46,26 +46,26 @@ public class PlayerConnectionListener {
      */
     private void onPlayerConnect(PlayerConnectEvent event) {
         try {
-            // Get player from event
-            Player player = event.player();
-            if (player == null) {
+            // Get player reference from event (correct API call from docs)
+            PlayerRef playerRef = event.getPlayerRef();
+            if (playerRef == null) {
                 return;
             }
             
             plugin.getLogger().at(Level.INFO).log(
-                "Player connecting: " + player.getName()
+                "Player connecting: " + playerRef.getUsername()
             );
             
             // Load player data from disk asynchronously
             CompletableFuture.runAsync(() -> {
                 try {
-                    plugin.getDataManager().loadPlayerData(player);
+                    plugin.getDataManager().loadPlayerData(playerRef);
                     plugin.getLogger().at(Level.INFO).log(
-                        "Loaded skill data for " + player.getName()
+                        "Loaded skill data for " + playerRef.getUsername()
                     );
                 } catch (Exception e) {
                     plugin.getLogger().at(Level.SEVERE).log(
-                        "Failed to load data for " + player.getName(), e
+                        "Failed to load data for " + playerRef.getUsername(), e
                     );
                 }
             });
@@ -83,26 +83,26 @@ public class PlayerConnectionListener {
      */
     private void onPlayerDisconnect(PlayerDisconnectEvent event) {
         try {
-            // Get player from event
-            Player player = event.player();
-            if (player == null) {
+            // Get player reference from event (correct API call from docs)
+            PlayerRef playerRef = event.getPlayerRef();
+            if (playerRef == null) {
                 return;
             }
             
             plugin.getLogger().at(Level.INFO).log(
-                "Player disconnecting: " + player.getName()
+                "Player disconnecting: " + playerRef.getUsername()
             );
             
             // Save player data asynchronously
             // This is already running on an async thread due to registerAsync
             try {
-                plugin.getDataManager().savePlayerData(player);
+                plugin.getDataManager().savePlayerData(playerRef);
                 plugin.getLogger().at(Level.INFO).log(
-                    "Saved skill data for " + player.getName()
+                    "Saved skill data for " + playerRef.getUsername()
                 );
             } catch (Exception e) {
                 plugin.getLogger().at(Level.SEVERE).log(
-                    "Failed to save data for " + player.getName(), e
+                    "Failed to save data for " + playerRef.getUsername(), e
                 );
             }
             
