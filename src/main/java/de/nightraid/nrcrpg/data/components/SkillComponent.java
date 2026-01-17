@@ -1,103 +1,57 @@
 package de.nightraid.nrcrpg.data.components;
 
 import com.hypixel.hytale.component.Component;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import de.nightraid.nrcrpg.skills.SkillData;
 import de.nightraid.nrcrpg.skills.SkillType;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.EnumMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * ECS Component storing skill data for players
- * Stores levels, XP, and total XP for all skills
+ * Component that stores skill data for an entity
  */
-public class SkillComponent implements Component<EntityStore> {
+public class SkillComponent implements Component {
     
     private final Map<SkillType, SkillData> skills;
     
-    /**
-     * Default constructor required by ECS
-     */
     public SkillComponent() {
-        this.skills = new ConcurrentHashMap<>();
+        this.skills = new EnumMap<>(SkillType.class);
         
-        // Initialize all skills with default values
+        // Initialize all skills
         for (SkillType type : SkillType.values()) {
-            skills.put(type, new SkillData());
+            skills.put(type, new SkillData(type));
         }
     }
     
     /**
-     * Clone constructor for ECS operations
+     * Get skill data for a specific skill type
      */
-    private SkillComponent(Map<SkillType, SkillData> skills) {
-        this.skills = new ConcurrentHashMap<>();
-        // Deep copy skill data
-        skills.forEach((type, data) -> 
-            this.skills.put(type, data.clone())
-        );
+    public SkillData getSkill(SkillType type) {
+        return skills.get(type);
     }
     
     /**
-     * Required by ECS - creates a deep copy of this component
+     * Get all skills
      */
-    @Override
-    @Nonnull
-    public Component<EntityStore> clone() {
-        return new SkillComponent(this.skills);
-    }
-    
-    // === Skill Data Access ===
-    
-    public int getLevel(SkillType type) {
-        return skills.getOrDefault(type, new SkillData()).getLevel();
-    }
-    
-    public double getXP(SkillType type) {
-        return skills.getOrDefault(type, new SkillData()).getXp();
-    }
-    
-    public double getTotalXP(SkillType type) {
-        return skills.getOrDefault(type, new SkillData()).getTotalXP();
-    }
-    
-    public SkillData getSkillData(SkillType type) {
-        return skills.getOrDefault(type, new SkillData());
-    }
-    
     public Map<SkillType, SkillData> getAllSkills() {
-        return new ConcurrentHashMap<>(skills);
+        return skills;
     }
     
-    // === Skill Data Modification ===
-    
-    public void setLevel(SkillType type, int level) {
-        skills.computeIfAbsent(type, k -> new SkillData()).setLevel(level);
-    }
-    
-    public void setXP(SkillType type, double xp) {
-        skills.computeIfAbsent(type, k -> new SkillData()).setXp(xp);
-    }
-    
-    public void addXP(SkillType type, double amount) {
-        SkillData data = skills.computeIfAbsent(type, k -> new SkillData());
-        data.addXP(amount);
-    }
-    
-    public void setSkillData(SkillType type, SkillData data) {
-        skills.put(type, data);
-    }
-    
-    public void resetSkill(SkillType type) {
-        skills.put(type, new SkillData());
-    }
-    
-    public void resetAllSkills() {
-        skills.clear();
-        for (SkillType type : SkillType.values()) {
-            skills.put(type, new SkillData());
+    @Override
+    @Nullable
+    public Component clone() {
+        SkillComponent copy = new SkillComponent();
+        
+        // Deep copy all skill data
+        for (Map.Entry<SkillType, SkillData> entry : skills.entrySet()) {
+            SkillData originalData = entry.getValue();
+            copy.skills.put(
+                entry.getKey(),
+                new SkillData(originalData.getSkillType(), originalData.getLevel())
+            );
         }
+        
+        return copy;
     }
 }
