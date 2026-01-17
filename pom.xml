@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+ http://maven.apache.org/xsd/maven-4.0.0.xsd">
+ <modelVersion>4.0.0</modelVersion>
+
+ <groupId>de.nightraid</groupId>
+ <artifactId>nrc-rpg</artifactId>
+ <version>1.0.0-SNAPSHOT</version>
+ <packaging>jar</packaging>
+
+ <name>NRC_RPG</name>
+ <description>MCMMO-inspired RPG skills system for Hytale</description>
+ <url>https://github.com/NadoHimself/NRC_RPG</url>
+
+ <properties>
+ <maven.compiler.source>25</maven.compiler.source>
+ <maven.compiler.target>25</maven.compiler.target>
+ <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+ <hytale.version>0.1.0</hytale.version>
+ </properties>
+
+ <repositories>
+ <!-- Hytale Repository (Placeholder - wird später bekannt gegeben) -->
+ <repository>
+ <id>hytale-releases</id>
+ <name>Hytale Releases</name>
+ <url>https://repo.hytale.com/releases</url>
+ </repository>
+ </repositories>
+
+ <dependencies>
+ <!-- Hytale Server API -->
+ <dependency>
+ <groupId>com.hytale</groupId>
+ <artifactId>hytale-server-api</artifactId>
+ <version>${hytale.version}</version>
+ <scope>provided</scope>
+ </dependency>
+
+ <!-- JSON Processing -->
+ <dependency>
+ <groupId>com.google.code.gson</groupId>
+ <artifactId>gson</artifactId>
+ <version>2.10.1</version>
+ <scope>provided</scope>
+ </dependency>
+
+ <!-- Annotations -->
+ <dependency>
+ <groupId>org.jetbrains</groupId>
+ <artifactId>annotations</artifactId>
+ <version>24.1.0</version>
+ <scope>provided</scope>
+ </dependency>
+
+ <!-- Logging (SLF4J) -->
+ <dependency>
+ <groupId>org.slf4j</groupId>
+ <artifactId>slf4j-api</artifactId>
+ <version>2.0.9</version>
+ <scope>provided</scope>
+ </dependency>
+
+ <!-- Testing -->
+ <dependency>
+ <groupId>org.junit.jupiter</groupId>
+ <artifactId>junit-jupiter</artifactId>
+ <version>5.10.1</version>
+ <scope>test</scope>
+ </dependency>
+ <dependency>
+ <groupId>org.mockito</groupId>
+ <artifactId>mockito-core</artifactId>
+ <version>5.8.0</version>
+ <scope>test</scope>
+ </dependency>
+ </dependencies>
+
+ <build>
+ <defaultGoal>clean package</defaultGoal>
+ <finalName>${project.name}-${project.version}</finalName>
+
+ <resources>
+ <resource>
+ <directory>src/main/resources</directory>
+ <filtering>true</filtering>
+ </resource>
+ </resources>
+
+ <plugins>
+ <!-- Compiler Plugin -->
+ <plugin>
+ <groupId>org.apache.maven.plugins</groupId>
+ <artifactId>maven-compiler-plugin</artifactId>
+ <version>3.11.0</version>
+ <configuration>
+ <source>25</source>
+ <target>25</target>
+ <encoding>UTF-8</encoding>
+ </configuration>
+ </plugin>
+
+ <!-- Shade Plugin (for bundling dependencies) -->
+ <plugin>
+ <groupId>org.apache.maven.plugins</groupId>
+ <artifactId>maven-shade-plugin</artifactId>
+ <version>3.5.1</version>
+ <executions>
+ <execution>
+ <phase>package</phase>
+ <goals>
+ <goal>shade</goal>
+ </goals>
+ <configuration>
+ <createDependencyReducedPom>false</createDependencyReducedPom>
+ <filters>
+ <filter>
+ <artifact>*:*</artifact>
+ <excludes>
+ <exclude>META-INF/*.SF</exclude>
+ <exclude>META-INF/*.DSA</exclude>
+ <exclude>META-INF/*.RSA</exclude>
+ </excludes>
+ </filter>
+ </filters>
+ </configuration>
+ </execution>
+ </executions>
+ </plugin>
+
+ <!-- JAR Plugin -->
+ <plugin>
+ <groupId>org.apache.maven.plugins</groupId>
+ <artifactId>maven-jar-plugin</artifactId>
+ <version>3.3.0</version>
+ <configuration>
+ <archive>
+ <manifestEntries>
+ <Implementation-Title>${project.name}</Implementation-Title>
+ <Implementation-Version>${project.version}</Implementation-Version>
+ </manifestEntries>
+ </archive>
+ </configuration>
+ </plugin>
+
+ <!-- Surefire Plugin (Testing) -->
+ <plugin>
+ <groupId>org.apache.maven.plugins</groupId>
+ <artifactId>maven-surefire-plugin</artifactId>
+ <version>3.2.2</version>
+ </plugin>
+ </plugins>
+ </build>
+</project>

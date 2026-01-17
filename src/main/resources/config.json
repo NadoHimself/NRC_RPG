@@ -1,0 +1,106 @@
+{
+ "xp_multiplier": 1.0,
+ "max_level": 100,
+ "enable_abilities": true,
+ "auto_save_interval": 300,
+ "debug_mode": false,
+ "level_up_sound": true,
+ "level_up_particles": true,
+ "broadcast_level_milestones": [25, 50, 75, 100],
+ "
+ "skills": {
+ "combat": {
+ "enabled": true,
+ "xp_rates": {
+ "melee_damage": 2.0,
+ "kill_bonus": 20.0,
+ "boss_kill": 500.0
+ },
+ "abilities": {
+ "serrated_strikes": {
+ "unlock_level": 20,
+ "cooldown": 10,
+ "damage_multiplier": 1.5,
+ "radius": 3.0
+ }
+ }
+ },
+ "mining": {
+ "enabled": true,
+ "xp_rates": {
+ "stone": 5.0,
+ "coal": 10.0,
+ "copper": 15.0,
+ "iron": 15.0,
+ "thorium": 30.0,
+ "rare_ore": 50.0
+ },
+ "abilities": {
+ "super_breaker": {
+ "unlock_level": 30,
+ "cooldown": 60,
+ "duration": 30,
+ "speed_multiplier": 3.0
+ }
+ }
+ },
+ "woodcutting": {
+ "enabled": true,
+ "xp_rates": {
+ "oak": 8.0,
+ "birch": 10.0,
+ "pine": 12.0,
+ "rare_wood": 15.0
+ },
+ "abilities": {
+ "tree_feller": {
+ "unlock_level": 20,
+ "max_blocks": 100
+ },
+ "leaf_blower": {
+ "unlock_level": 25,
+ "cooldown": 30,
+ "radius": 10.0
+ }
+ }
+ },
+ "farming": {
+ "enabled": true,
+ "xp_rates": {
+ "harvest": 10.0,
+ "plant": 2.0,
+ "breed_animal": 20.0
+ },
+ "abilities": {
+ "green_terra": {
+ "unlock_level": 20,
+ "cooldown": 90,
+ "duration": 20
+ },
+ "harvest_time": {
+ "unlock_level": 30,
+ "cooldown": 90,
+ "duration": 20,
+ "radius": 5
+ }
+ }
+ },
+ "fishing": {
+ "enabled": true,
+ "xp_rates": {
+ "common_fish": 15.0,
+ "uncommon_fish": 25.0,
+ "rare_fish": 40.0,
+ "treasure": 100.0,
+ "legendary": 150.0
+ },
+ "abilities": {
+ "fishing_frenzy": {
+ "unlock_level": 20,
+ "cooldown": 120,
+ "duration": 30
+ }
+ }
+ }
+ }
+}
