@@ -1,61 +1,21 @@
 {
-  "id": "nrc_rpg",
-  "name": "NRC_RPG",
-  "version": "1.0.0",
-  "description": "MCMMO-inspired RPG skills system for Hytale - Combat, Mining, Woodcutting, Farming, Fishing",
-  "author": "Kielian (NadoHimself)",
-  "authors": [
-    "Kielian"
+  "Group": "de.nightraid",
+  "Name": "NRC_RPG",
+  "Version": "1.0.0",
+  "Description": "MCMMO-inspired RPG skills system for Hytale with Combat, Mining, Woodcutting, Farming, and Fishing skills",
+  "Main": "de.nightraid.nrcrpg.NRCRPGPlugin",
+  "Authors": [
+    {
+      "Name": "Kielian",
+      "Email": "nado@nightraid.net",
+      "Url": "https://ageofflair.de"
+    }
   ],
-  "website": "https://github.com/NadoHimself/NRC_RPG",
-  "main": "de.nightraid.nrcrpg.NRCRPGPlugin",
-  "apiVersion": "0.1.0",
-  "dependencies": [],
-  "softDependencies": [],
-  "permissions": {
-    "nrc_rpg.use": {
-      "description": "Allows using the NRC_RPG plugin",
-      "default": true
-    },
-    "nrc_rpg.admin": {
-      "description": "Allows using admin commands",
-      "default": "op"
-    },
-    "nrc_rpg.bypass.cooldown": {
-      "description": "Bypass ability cooldowns",
-      "default": "op"
-    },
-    "nrc_rpg.skill.combat": {
-      "description": "Allows using Combat skill",
-      "default": true
-    },
-    "nrc_rpg.skill.mining": {
-      "description": "Allows using Mining skill",
-      "default": true
-    },
-    "nrc_rpg.skill.woodcutting": {
-      "description": "Allows using Woodcutting skill",
-      "default": true
-    },
-    "nrc_rpg.skill.farming": {
-      "description": "Allows using Farming skill",
-      "default": true
-    },
-    "nrc_rpg.skill.fishing": {
-      "description": "Allows using Fishing skill",
-      "default": true
-    }
-  },
-  "commands": {
-    "skills": {
-      "description": "Show your skills",
-      "usage": "/skills [skill] | /skills top <skill>",
-      "permission": "nrc_rpg.use"
-    },
-    "skillsadmin": {
-      "description": "Admin commands for managing skills",
-      "usage": "/skillsadmin <action> <player> [skill] [value]",
-      "permission": "nrc_rpg.admin"
-    }
-  }
+  "Website": "https://github.com/NadoHimself/NRC_RPG",
+  "ServerVersion": ">=0.0.1",
+  "Dependencies": {},
+  "OptionalDependencies": {},
+  "LoadBefore": {},
+  "DisabledByDefault": false,
+  "IncludesAssetPack": false
 }
