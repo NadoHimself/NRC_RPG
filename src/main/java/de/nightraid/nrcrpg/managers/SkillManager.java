@@ -1,84 +1,146 @@
 package de.nightraid.nrcrpg.managers;
 
 import de.nightraid.nrcrpg.NRCRPGPlugin;
-import de.nightraid.nrcrpg.skills.*;
+import de.nightraid.nrcrpg.data.PlayerData;
+import de.nightraid.nrcrpg.skills.SkillData;
+import de.nightraid.nrcrpg.skills.SkillType;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages all skills and their interactions
+ * Manages skill progression for all players
  */
 public class SkillManager {
     
     private final NRCRPGPlugin plugin;
-    private final XPManager xpManager;
-    private final Map<SkillType, Skill> skills;
+    private final Map<UUID, PlayerData> playerDataCache;
     
-    public SkillManager(NRCRPGPlugin plugin, XPManager xpManager) {
+    public SkillManager(NRCRPGPlugin plugin) {
         this.plugin = plugin;
-        this.xpManager = xpManager;
-        this.skills = new HashMap<>();
+        this.playerDataCache = new ConcurrentHashMap<>();
+    }
+    
+    /**
+     * Get player data from cache or create new
+     */
+    public PlayerData getPlayerData(UUID uuid) {
+        return playerDataCache.computeIfAbsent(uuid, k -> new PlayerData(uuid));
+    }
+    
+    /**
+     * Load player data (called on join)
+     */
+    public void loadPlayerData(UUID uuid) {
+        PlayerData data = plugin.getDataManager().loadPlayerData(uuid);
+        if (data != null) {
+            playerDataCache.put(uuid, data);
+            NRCRPGPlugin.getPluginLogger().debug("Loaded data for player {}", uuid);
+        }
+    }
+    
+    /**
+     * Unload player data (called on quit)
+     */
+    public void unloadPlayerData(UUID uuid) {
+        PlayerData data = playerDataCache.remove(uuid);
+        if (data != null) {
+            plugin.getDataManager().savePlayerData(data);
+            NRCRPGPlugin.getPluginLogger().debug("Unloaded data for player {}", uuid);
+        }
+    }
+    
+    /**
+     * Add XP to a skill
+     */
+    public void addXP(UUID uuid, SkillType skill, double amount) {
+        PlayerData data = getPlayerData(uuid);
+        SkillData skillData = data.getSkillData(skill);
         
-        initializeSkills();
-    }
-    
-    /**
-     * Initialize all skills
-     */
-    private void initializeSkills() {
-        // Register all skill implementations
-        registerSkill(new CombatSkill(plugin));
-        // registerSkill(new MiningSkill(plugin));
-        // registerSkill(new WoodcuttingSkill(plugin));
-        // registerSkill(new FarmingSkill(plugin));
-        // registerSkill(new FishingSkill(plugin));
+        // Apply XP multiplier from config
+        double multiplier = plugin.getConfigManager().getXPMultiplier();
+        amount *= multiplier;
         
-        plugin.getLogger().info("Registered " + skills.size() + " skills");
+        // Add XP
+        skillData.addXp(amount);
+        
+        // Check for level up
+        plugin.getXPManager().checkLevelUp(uuid, skill, skillData);
     }
     
     /**
-     * Register a skill
+     * Get skill level
      */
-    private void registerSkill(Skill skill) {
-        skills.put(skill.getType(), skill);
+    public int getLevel(UUID uuid, SkillType skill) {
+        return getPlayerData(uuid).getSkillData(skill).getLevel();
     }
     
     /**
-     * Get a skill by type
+     * Get skill XP
      */
-    public Skill getSkill(SkillType type) {
-        return skills.get(type);
+    public double getXP(UUID uuid, SkillType skill) {
+        return getPlayerData(uuid).getSkillData(skill).getXp();
     }
     
     /**
-     * Get all registered skills
+     * Set skill level (admin command)
      */
-    public Map<SkillType, Skill> getAllSkills() {
-        return new HashMap<>(skills);
+    public void setLevel(UUID uuid, SkillType skill, int level) {
+        PlayerData data = getPlayerData(uuid);
+        SkillData skillData = data.getSkillData(skill);
+        skillData.setLevel(level);
+        skillData.setXp(0); // Reset XP when setting level
+        
+        NRCRPGPlugin.getPluginLogger().info("Set {} skill level to {} for player {}", 
+            skill.getName(), level, uuid);
     }
     
     /**
-     * Add XP to a player's skill
-     * 
-     * @param player The player
-     * @param type The skill type
-     * @param amount XP amount
+     * Reset all skills for a player
      */
-    public void addXP(Object player, SkillType type, double amount) {
-        // This would use Hytale's player API and components
-        // SkillComponent skills = player.getComponent(SkillComponent.class);
-        // if (skills != null) {
-        //     skills.addXP(type, amount);
-        // }
+    public void resetSkills(UUID uuid) {
+        PlayerData data = getPlayerData(uuid);
+        for (SkillType skill : SkillType.values()) {
+            SkillData skillData = data.getSkillData(skill);
+            skillData.setLevel(1);
+            skillData.setXp(0);
+            skillData.setTotalXP(0);
+        }
+        
+        NRCRPGPlugin.getPluginLogger().info("Reset all skills for player {}", uuid);
     }
     
     /**
-     * Check if a player has permission for a skill
+     * Get passive bonus for a skill level
      */
-    public boolean hasSkillPermission(Object player, SkillType type) {
-        // Check permission: nrc_rpg.skill.{skill_name}
-        // return player.hasPermission("nrc_rpg.skill." + type.name().toLowerCase());
-        return true; // Placeholder
+    public double getPassiveBonus(UUID uuid, SkillType skill) {
+        int level = getLevel(uuid, skill);
+        return plugin.getXPManager().calculatePassiveBonus(level);
+    }
+    
+    /**
+     * Check if player has unlocked an ability
+     */
+    public boolean hasAbilityUnlocked(UUID uuid, SkillType skill, int requiredLevel) {
+        return getLevel(uuid, skill) >= requiredLevel;
+    }
+    
+    /**
+     * Shutdown manager
+     */
+    public void shutdown() {
+        // Save all cached player data
+        for (PlayerData data : playerDataCache.values()) {
+            plugin.getDataManager().savePlayerData(data);
+        }
+        playerDataCache.clear();
+    }
+    
+    /**
+     * Get all cached player UUIDs
+     */
+    public java.util.Set<UUID> getCachedPlayers() {
+        return playerDataCache.keySet();
     }
 }
