@@ -13,6 +13,7 @@ import de.nightraid.nrcrpg.tasks.AutoSaveTask;
 import de.nightraid.nrcrpg.util.ConfigManager;
 
 import javax.annotation.Nonnull;
+import java.io.File;
 import java.nio.file.Path;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -203,7 +204,7 @@ public class NRCRPGPlugin extends JavaPlugin {
     private void registerCommands() {
         try {
             getCommandRegistry().registerCommand(new SkillsCommand(this));
-            // Note: AdminCommand temporarily removed until API compatibility is resolved
+            // Note: AdminCommand removed until API is clarified
             
             getLogger().at(Level.INFO).log("Registered commands: /skills");
         } catch (Exception e) {
@@ -233,11 +234,22 @@ public class NRCRPGPlugin extends JavaPlugin {
     
     /**
      * Get plugin data folder path
+     * Create directory based on plugin manifest
      * @return Path to plugin data directory
      */
     public Path getPluginDataFolder() {
         if (dataFolder == null) {
-            dataFolder = super.getDataFolder();
+            // Create data folder in server's plugins directory
+            // Format: plugins/nrc_rpg/
+            File serverDir = new File(System.getProperty("user.dir"));
+            File pluginsDir = new File(serverDir, "plugins");
+            File pluginFolder = new File(pluginsDir, "nrc_rpg");
+            
+            if (!pluginFolder.exists()) {
+                pluginFolder.mkdirs();
+            }
+            
+            dataFolder = pluginFolder.toPath();
         }
         return dataFolder;
     }

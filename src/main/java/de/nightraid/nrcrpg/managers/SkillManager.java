@@ -30,7 +30,7 @@ public class SkillManager {
         int currentLevel = skillData.getLevel();
         double currentXP = skillData.getXp();
         
-        int requiredXP = XPCalculator.getRequiredXP(currentLevel);
+        double requiredXP = XPCalculator.getRequiredXP(currentLevel);
         
         if (currentXP >= requiredXP && currentLevel < 100) {
             skillData.levelUp();

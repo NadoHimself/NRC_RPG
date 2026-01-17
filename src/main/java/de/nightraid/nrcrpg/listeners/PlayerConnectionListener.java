@@ -1,5 +1,6 @@
 package de.nightraid.nrcrpg.listeners;
 
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
@@ -46,13 +47,13 @@ public class PlayerConnectionListener {
     private void onPlayerConnect(PlayerConnectEvent event) {
         try {
             // Get player from event
-            var player = event.getPlayer();
+            Player player = event.player();
             if (player == null) {
                 return;
             }
             
             plugin.getLogger().at(Level.INFO).log(
-                "Player connecting: " + player.getUsername()
+                "Player connecting: " + player.getName()
             );
             
             // Load player data from disk asynchronously
@@ -60,11 +61,11 @@ public class PlayerConnectionListener {
                 try {
                     plugin.getDataManager().loadPlayerData(player);
                     plugin.getLogger().at(Level.INFO).log(
-                        "Loaded skill data for " + player.getUsername()
+                        "Loaded skill data for " + player.getName()
                     );
                 } catch (Exception e) {
                     plugin.getLogger().at(Level.SEVERE).log(
-                        "Failed to load data for " + player.getUsername(), e
+                        "Failed to load data for " + player.getName(), e
                     );
                 }
             });
@@ -83,13 +84,13 @@ public class PlayerConnectionListener {
     private void onPlayerDisconnect(PlayerDisconnectEvent event) {
         try {
             // Get player from event
-            var player = event.getPlayer();
+            Player player = event.player();
             if (player == null) {
                 return;
             }
             
             plugin.getLogger().at(Level.INFO).log(
-                "Player disconnecting: " + player.getUsername()
+                "Player disconnecting: " + player.getName()
             );
             
             // Save player data asynchronously
@@ -97,11 +98,11 @@ public class PlayerConnectionListener {
             try {
                 plugin.getDataManager().savePlayerData(player);
                 plugin.getLogger().at(Level.INFO).log(
-                    "Saved skill data for " + player.getUsername()
+                    "Saved skill data for " + player.getName()
                 );
             } catch (Exception e) {
                 plugin.getLogger().at(Level.SEVERE).log(
-                    "Failed to save data for " + player.getUsername(), e
+                    "Failed to save data for " + player.getName(), e
                 );
             }
             

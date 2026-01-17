@@ -3,7 +3,7 @@ package de.nightraid.nrcrpg.commands;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.player.Player;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
 import de.nightraid.nrcrpg.data.components.SkillComponent;
 import de.nightraid.nrcrpg.skills.SkillData;
