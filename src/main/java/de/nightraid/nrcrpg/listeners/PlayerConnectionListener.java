@@ -3,10 +3,6 @@ package de.nightraid.nrcrpg.listeners;
 import com.hypixel.hytale.server.core.event.events.player.PlayerConnectEvent;
 import com.hypixel.hytale.server.core.event.events.player.PlayerDisconnectEvent;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
-import de.nightraid.nrcrpg.data.components.CooldownComponent;
-import de.nightraid.nrcrpg.data.components.SkillComponent;
-import de.nightraid.nrcrpg.data.components.StatisticsComponent;
-import de.nightraid.nrcrpg.data.components.XPComponent;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
@@ -49,48 +45,26 @@ public class PlayerConnectionListener {
      */
     private void onPlayerConnect(PlayerConnectEvent event) {
         try {
-            // Get player reference
-            var playerRef = event.playerRef();
-            if (playerRef == null || !playerRef.isAlive()) {
+            // Get player from event
+            var player = event.getPlayer();
+            if (player == null) {
                 return;
             }
             
             plugin.getLogger().at(Level.INFO).log(
-                "Player connecting: " + playerRef.username() + " (" + playerRef.uuid() + ")"
+                "Player connecting: " + player.getUsername()
             );
-            
-            // Get entity store
-            var store = playerRef.store();
-            
-            // Initialize or load components
-            // Components should already be added by ECS on entity creation,
-            // but we need to load saved data
-            
-            // Get existing components (created by ECS registration)
-            SkillComponent skillComp = store.getComponent(playerRef, SkillComponent.class);
-            XPComponent xpComp = store.getComponent(playerRef, XPComponent.class);
-            CooldownComponent cooldownComp = store.getComponent(playerRef, CooldownComponent.class);
-            StatisticsComponent statsComp = store.getComponent(playerRef, StatisticsComponent.class);
-            
-            // Check if components exist
-            if (skillComp == null) {
-                plugin.getLogger().at(Level.WARNING).log(
-                    "SkillComponent not found for player " + playerRef.username() + 
-                    " - components may not be registered correctly"
-                );
-                return;
-            }
             
             // Load player data from disk asynchronously
             CompletableFuture.runAsync(() -> {
                 try {
-                    plugin.getDataManager().loadPlayerData(playerRef);
+                    plugin.getDataManager().loadPlayerData(player);
                     plugin.getLogger().at(Level.INFO).log(
-                        "Loaded skill data for " + playerRef.username()
+                        "Loaded skill data for " + player.getUsername()
                     );
                 } catch (Exception e) {
                     plugin.getLogger().at(Level.SEVERE).log(
-                        "Failed to load data for " + playerRef.username(), e
+                        "Failed to load data for " + player.getUsername(), e
                     );
                 }
             });
@@ -108,27 +82,26 @@ public class PlayerConnectionListener {
      */
     private void onPlayerDisconnect(PlayerDisconnectEvent event) {
         try {
-            // Get player reference
-            var playerRef = event.playerRef();
-            if (playerRef == null) {
+            // Get player from event
+            var player = event.getPlayer();
+            if (player == null) {
                 return;
             }
             
             plugin.getLogger().at(Level.INFO).log(
-                "Player disconnecting: " + playerRef.username() + 
-                " (Reason: " + event.reason() + ")"
+                "Player disconnecting: " + player.getUsername()
             );
             
             // Save player data asynchronously
             // This is already running on an async thread due to registerAsync
             try {
-                plugin.getDataManager().savePlayerData(playerRef);
+                plugin.getDataManager().savePlayerData(player);
                 plugin.getLogger().at(Level.INFO).log(
-                    "Saved skill data for " + playerRef.username()
+                    "Saved skill data for " + player.getUsername()
                 );
             } catch (Exception e) {
                 plugin.getLogger().at(Level.SEVERE).log(
-                    "Failed to save data for " + playerRef.username(), e
+                    "Failed to save data for " + player.getUsername(), e
                 );
             }
             

@@ -3,7 +3,7 @@ package de.nightraid.nrcrpg.commands;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.AbstractCommand;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
-import com.hypixel.hytale.server.core.player.PlayerRef;
+import com.hypixel.hytale.server.core.player.Player;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
 import de.nightraid.nrcrpg.data.components.SkillComponent;
 import de.nightraid.nrcrpg.skills.SkillData;
@@ -36,28 +36,29 @@ public class SkillsCommand extends AbstractCommand {
     protected CompletableFuture<Void> execute(@Nonnull CommandContext context) {
         try {
             // Check if sender is a player
-            if (!(context.sender() instanceof PlayerRef)) {
+            if (!(context.sender() instanceof Player)) {
                 context.sender().sendMessage(
                     Message.raw("§cThis command can only be used by players!")
                 );
                 return CompletableFuture.completedFuture(null);
             }
             
-            PlayerRef playerRef = (PlayerRef) context.sender();
+            Player player = (Player) context.sender();
             
-            // Get player's SkillComponent
-            var store = playerRef.store();
-            SkillComponent skillComp = store.getComponent(playerRef, SkillComponent.class);
-            
-            if (skillComp == null) {
-                context.sender().sendMessage(
-                    Message.raw("§cError: Skill data not found! Please rejoin the server.")
-                );
-                return CompletableFuture.completedFuture(null);
-            }
-            
-            // Display all skills
-            displaySkillsOverview(context, skillComp);
+            // TODO: Get player's SkillComponent from EntityStore
+            // For now, send placeholder message
+            context.sender().sendMessage(
+                Message.raw("§6§l========== Your Skills ==========")
+            );
+            context.sender().sendMessage(
+                Message.raw("§7Skills system integration pending...")
+            );
+            context.sender().sendMessage(
+                Message.raw("§7Component access will be added once API is confirmed")
+            );
+            context.sender().sendMessage(
+                Message.raw("§6§l=================================")
+            );
             
         } catch (Exception e) {
             plugin.getLogger().at(Level.SEVERE).log("Error in SkillsCommand.execute", e);
@@ -67,49 +68,6 @@ public class SkillsCommand extends AbstractCommand {
         }
         
         return CompletableFuture.completedFuture(null);
-    }
-    
-    /**
-     * Display overview of all skills
-     */
-    private void displaySkillsOverview(CommandContext context, SkillComponent skillComp) {
-        var sender = context.sender();
-        
-        // Header
-        sender.sendMessage(Message.raw("§6§l========== Your Skills =========="));
-        sender.sendMessage(Message.raw(""));
-        
-        // Display each skill
-        for (SkillType type : SkillType.values()) {
-            SkillData data = skillComp.getSkillData(type);
-            int level = data.getLevel();
-            double currentXP = data.getXp();
-            int requiredXP = XPCalculator.getRequiredXP(level);
-            
-            // Calculate progress percentage
-            double progress = (currentXP / requiredXP) * 100.0;
-            
-            // Create progress bar
-            String progressBar = createProgressBar(progress, 20);
-            
-            // Format: [Icon] Skill Name - Level XX [Progress Bar] (XP/Total XP)
-            String line = String.format(
-                "§e%s §f%s §7- §aLevel %d §8%s §7(%.1f/%.0f XP)",
-                type.getIcon(),
-                type.getName(),
-                level,
-                progressBar,
-                currentXP,
-                (double) requiredXP
-            );
-            
-            sender.sendMessage(Message.raw(line));
-        }
-        
-        // Footer
-        sender.sendMessage(Message.raw(""));
-        sender.sendMessage(Message.raw("§7Use §e/skills <skill> §7for detailed info"));
-        sender.sendMessage(Message.raw("§6§l================================="));
     }
     
     /**
