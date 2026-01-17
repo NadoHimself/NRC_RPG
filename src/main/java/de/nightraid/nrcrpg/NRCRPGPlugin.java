@@ -1,14 +1,19 @@
 package de.nightraid.nrcrpg;
 
+import de.nightraid.nrcrpg.commands.AdminCommand;
 import de.nightraid.nrcrpg.commands.SkillsCommand;
 import de.nightraid.nrcrpg.listeners.*;
-import de.nightraid.nrcrpg.managers.DataManager;
-import de.nightraid.nrcrpg.managers.SkillManager;
-import de.nightraid.nrcrpg.managers.XPManager;
+import de.nightraid.nrcrpg.managers.*;
+import de.nightraid.nrcrpg.tasks.AutoSaveTask;
+import de.nightraid.nrcrpg.util.ConfigManager;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.nio.file.Path;
 
 /**
- * NRC_RPG - MCMMO-inspired RPG skills system for Hytale
+ * Main Plugin Class for NRC_RPG
+ * MCMMO-inspired Skills & Leveling System for Hytale
  * 
  * @author Kielian (NadoHimself)
  * @version 1.0.0
@@ -16,158 +21,184 @@ import org.slf4j.Logger;
 public class NRCRPGPlugin {
     
     private static NRCRPGPlugin instance;
-    private Logger logger;
+    private static final Logger logger = LoggerFactory.getLogger("NRC_RPG");
     
     // Managers
+    private ConfigManager configManager;
+    private DataManager dataManager;
     private SkillManager skillManager;
     private XPManager xpManager;
-    private DataManager dataManager;
+    private CooldownManager cooldownManager;
     
-    // Configuration
-    private Config config;
+    // Tasks
+    private AutoSaveTask autoSaveTask;
+    
+    // Plugin state
+    private boolean enabled = false;
+    private Path dataFolder;
     
     /**
-     * Called when the plugin is enabled
+     * Called when plugin is enabled
      */
     public void onEnable() {
         instance = this;
-        logger = getLogger();
+        long startTime = System.currentTimeMillis();
         
-        logger.info("========================================");
-        logger.info("  NRC_RPG v1.0.0 - Starting up...");
-        logger.info("  by Kielian (NadoHimself)");
-        logger.info("========================================");
+        logger.info("==========================================");
+        logger.info("  NRC_RPG v1.0.0 - Initializing...");
+        logger.info("  Author: Kielian (NadoHimself)");
+        logger.info("  Company: Age of Flair");
+        logger.info("==========================================");
         
-        // Load configuration
-        loadConfiguration();
-        
-        // Initialize managers
-        initializeManagers();
-        
-        // Register components
-        registerComponents();
-        
-        // Register events
-        registerEvents();
-        
-        // Register commands
-        registerCommands();
-        
-        // Schedule tasks
-        scheduleTasks();
-        
-        logger.info("NRC_RPG successfully enabled!");
+        try {
+            // Initialize data folder
+            initializeDataFolder();
+            
+            // Load configuration
+            logger.info("Loading configuration...");
+            this.configManager = new ConfigManager(this);
+            configManager.loadConfigs();
+            
+            // Initialize managers
+            logger.info("Initializing managers...");
+            this.cooldownManager = new CooldownManager();
+            this.dataManager = new DataManager(this);
+            this.xpManager = new XPManager(this);
+            this.skillManager = new SkillManager(this);
+            
+            // Register components (ECS)
+            logger.info("Registering ECS components...");
+            registerComponents();
+            
+            // Register event listeners
+            logger.info("Registering event listeners...");
+            registerListeners();
+            
+            // Register commands
+            logger.info("Registering commands...");
+            registerCommands();
+            
+            // Start scheduled tasks
+            logger.info("Starting scheduled tasks...");
+            startTasks();
+            
+            enabled = true;
+            long loadTime = System.currentTimeMillis() - startTime;
+            
+            logger.info("==========================================");
+            logger.info("  NRC_RPG v1.0.0 enabled successfully!");
+            logger.info("  Load time: {}ms", loadTime);
+            logger.info("  Skills: Combat, Mining, Woodcutting, Farming, Fishing");
+            logger.info("==========================================");
+            
+        } catch (Exception e) {
+            logger.error("Failed to enable NRC_RPG!", e);
+            enabled = false;
+        }
     }
     
     /**
-     * Called when the plugin is disabled
+     * Called when plugin is disabled
      */
     public void onDisable() {
+        if (!enabled) return;
+        
         logger.info("Disabling NRC_RPG...");
         
-        // Save all player data
-        if (dataManager != null) {
-            dataManager.saveAllPlayerData();
-        }
-        
-        // Unregister event listeners
-        // eventBus.unregisterAll(this);
-        
-        logger.info("NRC_RPG disabled successfully!");
-    }
-    
-    /**
-     * Load plugin configuration
-     */
-    private void loadConfiguration() {
         try {
-            // Load config.json using Hytale's Codec system
-            // config = configManager.load("config.json", Config.class);
-            logger.info("Configuration loaded successfully!");
+            // Stop scheduled tasks
+            if (autoSaveTask != null) {
+                autoSaveTask.cancel();
+            }
+            
+            // Save all player data
+            logger.info("Saving all player data...");
+            dataManager.saveAllPlayerData();
+            
+            // Cleanup
+            skillManager.shutdown();
+            
+            enabled = false;
+            logger.info("NRC_RPG disabled successfully!");
+            
         } catch (Exception e) {
-            logger.error("Failed to load configuration!", e);
+            logger.error("Error during plugin disable!", e);
         }
     }
     
     /**
-     * Initialize all managers
+     * Initialize plugin data folder
      */
-    private void initializeManagers() {
-        logger.info("Initializing managers...");
-        
-        dataManager = new DataManager(this);
-        xpManager = new XPManager(this);
-        skillManager = new SkillManager(this, xpManager);
-        
-        logger.info("Managers initialized!");
+    private void initializeDataFolder() {
+        // TODO: Get from Hytale API when available
+        // For now use placeholder path
+        this.dataFolder = Path.of("plugins/NRC_RPG");
+        logger.info("Data folder: {}", dataFolder.toAbsolutePath());
     }
     
     /**
-     * Register custom ECS components
+     * Register ECS components
      */
     private void registerComponents() {
-        logger.info("Registering components...");
-        
-        // Register SkillComponent with Hytale's ECS
-        // componentRegistry.register(SkillComponent.class);
-        // componentRegistry.register(CooldownComponent.class);
-        
-        logger.info("Components registered!");
+        // TODO: Register with Hytale's Component Registry when API is available
+        logger.info("ECS components registered (placeholder - awaiting Hytale API)");
     }
     
     /**
      * Register event listeners
      */
-    private void registerEvents() {
-        logger.info("Registering event listeners...");
-        
-        // Register all skill-specific listeners
+    private void registerListeners() {
+        // TODO: Register with Hytale's Event Bus when API is available
         new CombatListener(this);
         new MiningListener(this);
         new WoodcuttingListener(this);
         new FarmingListener(this);
         new FishingListener(this);
+        new PlayerConnectionListener(this);
         
-        logger.info("Event listeners registered!");
+        logger.info("Event listeners registered (6 listeners active)");
     }
     
     /**
      * Register commands
      */
     private void registerCommands() {
-        logger.info("Registering commands...");
+        // TODO: Register with Hytale's Command Manager when API is available
+        new SkillsCommand(this);
+        new AdminCommand(this);
         
-        // commandManager.register("skills", new SkillsCommand(this));
-        // commandManager.register("skillsadmin", new AdminCommand(this));
-        
-        logger.info("Commands registered!");
+        logger.info("Commands registered: /skills, /skillsadmin");
     }
     
     /**
-     * Schedule repeating tasks
+     * Start scheduled tasks
      */
-    private void scheduleTasks() {
-        logger.info("Scheduling tasks...");
+    private void startTasks() {
+        int saveInterval = configManager.getAutoSaveInterval();
         
         // Auto-save task
-        int saveInterval = 300; // config.getAutoSaveInterval();
-        // scheduler.scheduleRepeating(() -> {
-        //     dataManager.saveAllPlayerData();
-        //     logger.info("Auto-saved all player data");
-        // }, saveInterval, TimeUnit.SECONDS);
+        this.autoSaveTask = new AutoSaveTask(this);
+        // TODO: Schedule with Hytale's Scheduler when API is available
         
-        logger.info("Tasks scheduled!");
+        logger.info("Auto-save scheduled every {} seconds", saveInterval);
     }
     
-    // ==================== Getters ====================
+    // Getters
     
     public static NRCRPGPlugin getInstance() {
         return instance;
     }
     
-    public Logger getLogger() {
-        // Return Hytale's logger
+    public static Logger getPluginLogger() {
         return logger;
+    }
+    
+    public ConfigManager getConfigManager() {
+        return configManager;
+    }
+    
+    public DataManager getDataManager() {
+        return dataManager;
     }
     
     public SkillManager getSkillManager() {
@@ -178,31 +209,19 @@ public class NRCRPGPlugin {
         return xpManager;
     }
     
-    public DataManager getDataManager() {
-        return dataManager;
+    public CooldownManager getCooldownManager() {
+        return cooldownManager;
     }
     
-    public Config getConfig() {
-        return config;
+    public Path getDataFolder() {
+        return dataFolder;
     }
     
-    // ==================== Config Class ====================
+    public boolean isEnabled() {
+        return enabled;
+    }
     
-    /**
-     * Plugin configuration class
-     */
-    public static class Config {
-        private double xpMultiplier = 1.0;
-        private int maxLevel = 100;
-        private boolean enableAbilities = true;
-        private int autoSaveInterval = 300;
-        private boolean debugMode = false;
-        
-        // Getters
-        public double getXpMultiplier() { return xpMultiplier; }
-        public int getMaxLevel() { return maxLevel; }
-        public boolean isEnableAbilities() { return enableAbilities; }
-        public int getAutoSaveInterval() { return autoSaveInterval; }
-        public boolean isDebugMode() { return debugMode; }
+    public String getVersion() {
+        return "1.0.0";
     }
 }

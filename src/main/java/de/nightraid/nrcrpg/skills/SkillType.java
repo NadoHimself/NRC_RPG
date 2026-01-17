@@ -1,52 +1,45 @@
 package de.nightraid.nrcrpg.skills;
 
 /**
- * Enum representing all available skill types in NRC_RPG
+ * Enum representing all available skill types
  */
 public enum SkillType {
     
-    COMBAT("Combat", "⚔️"),
-    MINING("Mining", "⛏️"),
-    WOODCUTTING("Woodcutting", "🪓"),
-    FARMING("Farming", "🌾"),
-    FISHING("Fishing", "🎣");
+    COMBAT("Combat", "⚔️", "Kampf"),
+    MINING("Mining", "⛏️", "Bergbau"),
+    WOODCUTTING("Woodcutting", "🪓", "Holzfällen"),
+    FARMING("Farming", "🌾", "Landwirtschaft"),
+    FISHING("Fishing", "🎣", "Angeln");
     
-    private final String displayName;
+    private final String name;
     private final String icon;
+    private final String germanName;
     
-    SkillType(String displayName, String icon) {
-        this.displayName = displayName;
+    SkillType(String name, String icon, String germanName) {
+        this.name = name;
         this.icon = icon;
+        this.germanName = germanName;
     }
     
-    /**
-     * Get the display name of this skill
-     */
-    public String getDisplayName() {
-        return displayName;
+    public String getName() {
+        return name;
     }
     
-    /**
-     * Get the icon/emoji for this skill
-     */
     public String getIcon() {
         return icon;
     }
     
-    /**
-     * Get formatted name with icon
-     */
-    public String getFormattedName() {
-        return icon + " " + displayName;
+    public String getGermanName() {
+        return germanName;
     }
     
-    /**
-     * Parse skill type from string (case-insensitive)
-     */
-    public static SkillType fromString(String name) {
+    public String getDisplayName() {
+        return icon + " " + name;
+    }
+    
+    public static SkillType fromString(String str) {
         for (SkillType type : values()) {
-            if (type.name().equalsIgnoreCase(name) || 
-                type.displayName.equalsIgnoreCase(name)) {
+            if (type.name.equalsIgnoreCase(str) || type.name().equalsIgnoreCase(str)) {
                 return type;
             }
         }
