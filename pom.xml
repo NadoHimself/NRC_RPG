@@ -21,22 +21,14 @@
  <hytale.version>0.1.0</hytale.version>
  </properties>
 
- <repositories>
- <!-- Hytale Repository (Placeholder - wird später bekannt gegeben) -->
- <repository>
- <id>hytale-releases</id>
- <name>Hytale Releases</name>
- <url>https://repo.hytale.com/releases</url>
- </repository>
- </repositories>
-
  <dependencies>
- <!-- Hytale Server API -->
+ <!-- Hytale Server API - Using local JAR from lib/ folder -->
  <dependency>
- <groupId>com.hytale</groupId>
+ <groupId>com.hypixel.hytale</groupId>
  <artifactId>hytale-server-api</artifactId>
  <version>${hytale.version}</version>
- <scope>provided</scope>
+ <scope>system</scope>
+ <systemPath>${basedir}/lib/HytaleServer.jar</systemPath>
  </dependency>
 
  <!-- JSON Processing -->
