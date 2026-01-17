@@ -1,48 +1,53 @@
 package de.nightraid.nrcrpg.managers;
 
 import de.nightraid.nrcrpg.NRCRPGPlugin;
-import de.nightraid.nrcrpg.skills.SkillData;
 import de.nightraid.nrcrpg.skills.SkillType;
 import de.nightraid.nrcrpg.util.XPCalculator;
 
 import java.util.logging.Level;
 
+/**
+ * Manages skill-related operations and calculations
+ */
 public class SkillManager {
     
     private final NRCRPGPlugin plugin;
     
     public SkillManager(NRCRPGPlugin plugin) {
         this.plugin = plugin;
-        plugin.getLogger().at(Level.INFO).log("SkillManager initialized");
     }
     
-    public void addSkillXP(Object player, SkillType skillType, double amount) {
-        try {
-            plugin.getLogger().at(Level.FINE).log(
-                "Adding " + amount + " XP to " + skillType
-            );
-        } catch (Exception e) {
-            plugin.getLogger().at(Level.SEVERE).log("Error adding skill XP", e);
-        }
+    /**
+     * Calculate if a player should level up based on their XP
+     * @param currentXP Current XP amount
+     * @param currentLevel Current level
+     * @return New level (same if no level up)
+     */
+    public int calculateLevel(double currentXP, int currentLevel) {
+        int calculatedLevel = XPCalculator.getLevelForXP(currentXP);
+        return Math.max(currentLevel, calculatedLevel);
     }
     
-    public void checkLevelUp(Object player, SkillType skillType, SkillData skillData) {
-        int currentLevel = skillData.getLevel();
-        double currentXP = skillData.getXp();
-        
-        double requiredXP = XPCalculator.getRequiredXP(currentLevel);
-        
-        if (currentXP >= requiredXP && currentLevel < 100) {
-            skillData.levelUp();
-            skillData.setXp(currentXP - requiredXP);
-            
-            plugin.getLogger().at(Level.INFO).log(
-                "Player leveled up " + skillType + " to " + (currentLevel + 1)
-            );
-        }
+    /**
+     * Get XP required for a specific level
+     */
+    public double getXPForLevel(int level) {
+        return XPCalculator.getXPForLevel(level);
     }
     
-    public void shutdown() {
-        plugin.getLogger().at(Level.INFO).log("SkillManager shut down");
+    /**
+     * Get progress percentage to next level
+     */
+    public double getProgressToNextLevel(double currentXP, int currentLevel) {
+        return XPCalculator.getProgressToNextLevel(currentXP, currentLevel);
+    }
+    
+    /**
+     * Check if player has reached a new level
+     */
+    public boolean hasLeveledUp(double oldXP, double newXP, int currentLevel) {
+        int oldLevel = XPCalculator.getLevelForXP(oldXP);
+        int newLevel = XPCalculator.getLevelForXP(newXP);
+        return newLevel > oldLevel && newLevel > currentLevel;
     }
 }

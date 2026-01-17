@@ -1,88 +1,93 @@
 package de.nightraid.nrcrpg.skills;
 
 /**
- * Data class storing skill progression information
- * Stores level, current XP, and total XP earned
+ * Data class representing a single skill's information
  */
-public class SkillData implements Cloneable {
+public class SkillData {
     
+    private final SkillType skillType;
     private int level;
-    private double xp;
-    private double totalXP;
+    private double currentXP;
+    private double maxXP;
     
-    public SkillData() {
+    /**
+     * Create new skill data with default values
+     */
+    public SkillData(SkillType skillType) {
+        this.skillType = skillType;
         this.level = 1;
-        this.xp = 0.0;
-        this.totalXP = 0.0;
+        this.currentXP = 0.0;
+        this.maxXP = 100.0;
     }
     
-    public SkillData(int level, double xp, double totalXP) {
+    /**
+     * Create new skill data with specific level
+     */
+    public SkillData(SkillType skillType, int level) {
+        this.skillType = skillType;
         this.level = level;
-        this.xp = xp;
-        this.totalXP = totalXP;
+        this.currentXP = 0.0;
+        this.maxXP = calculateMaxXP(level);
     }
     
-    @Override
-    public SkillData clone() {
-        try {
-            return (SkillData) super.clone();
-        } catch (CloneNotSupportedException e) {
-            // This should never happen since we implement Cloneable
-            return new SkillData(this.level, this.xp, this.totalXP);
-        }
+    /**
+     * Create skill data with all parameters
+     */
+    public SkillData(SkillType skillType, int level, double currentXP, double maxXP) {
+        this.skillType = skillType;
+        this.level = level;
+        this.currentXP = currentXP;
+        this.maxXP = maxXP;
     }
     
-    // Getters
+    /**
+     * Legacy constructor for backwards compatibility
+     */
+    public SkillData(int level, double currentXP, double maxXP) {
+        this(SkillType.MINING, level, currentXP, maxXP);
+    }
+    
+    /**
+     * Default constructor
+     */
+    public SkillData() {
+        this(SkillType.MINING);
+    }
+    
+    public SkillType getSkillType() {
+        return skillType;
+    }
     
     public int getLevel() {
         return level;
     }
     
-    public double getXp() {
-        return xp;
-    }
-    
-    public double getTotalXP() {
-        return totalXP;
-    }
-    
-    // Setters
-    
     public void setLevel(int level) {
-        this.level = Math.max(1, Math.min(level, 100)); // Clamp between 1-100
+        this.level = level;
+        this.maxXP = calculateMaxXP(level);
     }
     
-    public void setXp(double xp) {
-        this.xp = Math.max(0, xp);
+    public double getCurrentXP() {
+        return currentXP;
     }
     
-    public void setTotalXP(double totalXP) {
-        this.totalXP = Math.max(0, totalXP);
+    public void setCurrentXP(double currentXP) {
+        this.currentXP = currentXP;
     }
     
-    // Utility methods
+    public double getMaxXP() {
+        return maxXP;
+    }
     
     public void addXP(double amount) {
-        if (amount <= 0) return;
-        
-        this.xp += amount;
-        this.totalXP += amount;
+        this.currentXP += amount;
     }
     
-    public void levelUp() {
-        if (level < 100) {
-            this.level++;
-        }
-    }
-    
-    public void reset() {
-        this.level = 1;
-        this.xp = 0.0;
-        this.totalXP = 0.0;
-    }
-    
-    @Override
-    public String toString() {
-        return "SkillData{level=" + level + ", xp=" + xp + ", totalXP=" + totalXP + "}";
+    /**
+     * Calculate max XP required for a level
+     * Uses exponential formula: 100 * (level^2) * 1.5
+     */
+    private double calculateMaxXP(int level) {
+        return 100.0 * Math.pow(level, 2.0) * 1.5;
     }
 }
