@@ -1,126 +1,126 @@
 package de.nightraid.nrcrpg.listeners;
 
+import com.hypixel.hytale.server.core.ecs.Ref;
+import com.hypixel.hytale.server.core.ecs.store.entity.EntityStore;
+import com.hypixel.hytale.server.gameplay.systems.damage.event.DamageEvents;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
+import de.nightraid.nrcrpg.data.components.SkillComponent;
+import de.nightraid.nrcrpg.data.components.StatisticsComponent;
+import de.nightraid.nrcrpg.data.components.XPComponent;
 import de.nightraid.nrcrpg.skills.SkillType;
 
+import java.util.logging.Level;
+
 /**
- * Listener for combat-related events
+ * Listener for Combat-related events
+ * Grants Combat XP for dealing damage and killing entities
  */
 public class CombatListener {
     
     private final NRCRPGPlugin plugin;
     
+    // XP multipliers
+    private static final double XP_PER_DAMAGE = 2.0;  // 2 XP per damage point
+    private static final double KILL_BONUS_XP = 20.0; // Bonus XP for kills
+    
     public CombatListener(NRCRPGPlugin plugin) {
         this.plugin = plugin;
-        // TODO: Register with Hytale Event Bus when API available
+        registerEvents();
+    }
+    
+    private void registerEvents() {
+        // Register Damage Event from Hytale's damage system
+        // DamageEvents are grouped: Gather -> Filter -> Inspect
+        // We want to listen to the Inspect group (after damage is calculated)
+        plugin.getEventRegistry().register(
+            DamageEvents.Inspect.class,
+            this::onDamageInspect
+        );
+        
+        plugin.getLogger().at(Level.INFO).log("CombatListener registered");
     }
     
     /**
-     * Handle entity damage by entity
-     * TODO: Replace with actual Hytale event when API is available
+     * Called when damage is dealt (after filters, before application)
+     * @param event The damage inspect event
      */
-    public void onEntityDamageByEntity(Object event) {
-        // Placeholder for Hytale EntityDamageByEntityEvent
-        /*
-        if (!(event.getDamager() instanceof Player)) return;
-        if (!(event.getEntity() instanceof LivingEntity)) return;
-        
-        Player player = (Player) event.getDamager();
-        LivingEntity target = (LivingEntity) event.getEntity();
-        double damage = event.getFinalDamage();
-        
-        // Grant XP based on damage dealt
-        double xp = calculateDamageXP(damage, target);
-        plugin.getSkillManager().addXP(player.getUUID(), SkillType.COMBAT, xp);
-        
-        // Apply passive damage bonus
-        double bonus = plugin.getSkillManager().getPassiveBonus(player.getUUID(), SkillType.COMBAT);
-        if (bonus > 0) {
-            event.setDamage(damage * (1.0 + bonus));
-        }
-        
-        // Check for special abilities (Bleeding, Critical Strike)
-        int level = plugin.getSkillManager().getLevel(player.getUUID(), SkillType.COMBAT);
-        
-        if (level >= 20) {
-            // 15% chance for bleeding effect
-            if (Math.random() < 0.15) {
-                applyBleedingEffect(target, player);
+    private void onDamageInspect(DamageEvents.Inspect event) {
+        try {
+            // Get the attacker reference
+            Ref<EntityStore> attackerRef = event.attacker();
+            if (attackerRef == null || !attackerRef.isAlive()) {
+                return; // No attacker or attacker is dead
             }
-        }
-        
-        if (level >= 40) {
-            // 15% chance for critical strike (2x damage)
-            if (Math.random() < 0.15) {
-                event.setDamage(damage * 2.0);
-                // TODO: Send critical hit message
+            
+            // Get entity store to access components
+            EntityStore store = attackerRef.store();
+            
+            // Check if attacker is a player (has SkillComponent)
+            SkillComponent skillComp = store.getComponent(attackerRef, SkillComponent.class);
+            if (skillComp == null) {
+                return; // Not a player or doesn't have skills
             }
-        }
-        */
-    }
-    
-    /**
-     * Handle entity death
-     * TODO: Replace with actual Hytale event when API is available
-     */
-    public void onEntityDeath(Object event) {
-        // Placeholder for Hytale EntityDeathEvent
-        /*
-        if (!(event.getKiller() instanceof Player)) return;
-        
-        Player player = (Player) event.getKiller();
-        LivingEntity entity = event.getEntity();
-        
-        // Grant kill bonus XP
-        double xp = calculateKillXP(entity);
-        plugin.getSkillManager().addXP(player.getUUID(), SkillType.COMBAT, xp);
-        
-        // Check for rare drop bonus at level 50+
-        int level = plugin.getSkillManager().getLevel(player.getUUID(), SkillType.COMBAT);
-        if (level >= 50) {
-            // Increase rare drop chance
-            if (Math.random() < 0.1) {
-                // TODO: Add bonus loot
+            
+            // Get damage amount
+            double damage = event.damage().amount();
+            if (damage <= 0) {
+                return; // No damage dealt
             }
+            
+            // Calculate XP gain
+            double xpGain = damage * XP_PER_DAMAGE;
+            
+            // Add pending XP (will be processed asynchronously)
+            XPComponent xpComp = store.getComponent(attackerRef, XPComponent.class);
+            if (xpComp != null) {
+                xpComp.addPending(SkillType.COMBAT, xpGain);
+            }
+            
+            // Update statistics
+            StatisticsComponent stats = store.getComponent(attackerRef, StatisticsComponent.class);
+            if (stats != null) {
+                stats.addDamageDealt((int) damage);
+            }
+            
+            // Check if this damage will kill the target
+            Ref<EntityStore> victimRef = event.victim();
+            if (victimRef != null && victimRef.isAlive()) {
+                // TODO: Check victim health to determine kill
+                // For now, we'll handle kills in a separate event when available
+            }
+            
+        } catch (Exception e) {
+            plugin.getLogger().at(Level.SEVERE).log("Error in CombatListener.onDamageInspect", e);
         }
-        */
     }
     
     /**
-     * Calculate XP from damage dealt
+     * Called when an entity is killed by another entity
+     * Note: This event might not exist yet in Hytale API, placeholder for future
      */
-    private double calculateDamageXP(double damage, Object target) {
-        // Base XP: damage * 2
-        double xp = damage * 2.0;
-        
-        // TODO: Add multipliers based on mob type/difficulty
-        // Boss mobs: 5x XP
-        // Elite mobs: 3x XP
-        // Normal mobs: 1x XP
-        
-        return xp;
-    }
-    
-    /**
-     * Calculate XP from killing entity
-     */
-    private double calculateKillXP(Object entity) {
-        // Base kill bonus
-        double xp = 20.0;
-        
-        // TODO: Adjust based on entity type
-        // Boss: 200-500 XP
-        // Elite: 50-100 XP
-        // Normal: 20 XP
-        
-        return xp;
-    }
-    
-    /**
-     * Apply bleeding effect to target
-     */
-    private void applyBleedingEffect(Object target, Object player) {
-        // TODO: Apply 3 second damage over time effect
-        // Requires Hytale's effect/potion system
+    private void onEntityKilled(Ref<EntityStore> killer, Ref<EntityStore> victim) {
+        try {
+            if (killer == null || !killer.isAlive()) {
+                return;
+            }
+            
+            EntityStore store = killer.store();
+            
+            // Check if killer has skill components
+            XPComponent xpComp = store.getComponent(killer, XPComponent.class);
+            if (xpComp != null) {
+                // Grant kill bonus XP
+                xpComp.addPending(SkillType.COMBAT, KILL_BONUS_XP);
+            }
+            
+            // Update statistics
+            StatisticsComponent stats = store.getComponent(killer, StatisticsComponent.class);
+            if (stats != null) {
+                stats.incrementMobsKilled();
+            }
+            
+        } catch (Exception e) {
+            plugin.getLogger().at(Level.SEVERE).log("Error in CombatListener.onEntityKilled", e);
+        }
     }
 }
