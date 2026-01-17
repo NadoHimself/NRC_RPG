@@ -28,7 +28,7 @@
  <artifactId>hytale-server-api</artifactId>
  <version>${hytale.version}</version>
  <scope>system</scope>
- <systemPath>${basedir}/lib/HytaleServer.jar</systemPath>
+ <systemPath>${project.basedir}/lib/HytaleServer.jar</systemPath>
  </dependency>
 
  <!-- JSON Processing -->
