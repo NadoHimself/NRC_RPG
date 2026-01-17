@@ -1,7 +1,5 @@
 package de.nightraid.nrcrpg;
 
-import com.hypixel.hytale.component.ComponentType;
-import com.hypixel.hytale.server.core.entity.EntityStore;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import de.nightraid.nrcrpg.commands.SkillsCommand;
@@ -11,9 +9,9 @@ import de.nightraid.nrcrpg.data.components.SkillComponent;
 import de.nightraid.nrcrpg.data.components.StatisticsComponent;
 import de.nightraid.nrcrpg.data.components.XPComponent;
 import de.nightraid.nrcrpg.listeners.*;
-import de.nightraid.nrcrpg.skills.SkillType;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -26,18 +24,15 @@ public class NRCRPGPlugin extends JavaPlugin {
     // Singleton instance for easy access
     private static NRCRPGPlugin instance;
     
-    // Component Types (must be registered before use)
-    private ComponentType<EntityStore, SkillComponent> skillComponentType;
-    private ComponentType<EntityStore, XPComponent> xpComponentType;
-    private ComponentType<EntityStore, CooldownComponent> cooldownComponentType;
-    private ComponentType<EntityStore, StatisticsComponent> statisticsComponentType;
-    
     // Managers
     private DataManager dataManager;
     
     // Listeners (keep references for cleanup)
     private PlayerConnectionListener playerConnectionListener;
     private MiningListener miningListener;
+    
+    // Auto-save task
+    private ScheduledFuture<?> autoSaveTask;
     
     public NRCRPGPlugin(@Nonnull JavaPluginInit init) {
         super(init);
@@ -52,16 +47,13 @@ public class NRCRPGPlugin extends JavaPlugin {
         getLogger().at(Level.INFO).log("  Skills: Combat, Mining, Woodcutting, Farming, Fishing");
         getLogger().at(Level.INFO).log("==========================================");
         
-        // 1. Register Components (MUST be first!)
-        registerComponents();
-        
-        // 2. Initialize Managers
+        // 1. Initialize Managers
         this.dataManager = new DataManager(this);
         
-        // 3. Register Commands
+        // 2. Register Commands
         registerCommands();
         
-        // 4. Register Event Listeners
+        // 3. Register Event Listeners
         registerListeners();
         
         getLogger().at(Level.INFO).log("NRC_RPG setup complete!");
@@ -72,27 +64,30 @@ public class NRCRPGPlugin extends JavaPlugin {
         getLogger().at(Level.INFO).log("NRC_RPG started successfully!");
         
         // Start auto-save task (runs every 5 minutes)
-        getTaskRegistry().registerTask(
-            com.hypixel.hytale.server.core.HytaleServer.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(
-                () -> {
-                    try {
-                        getLogger().at(Level.INFO).log("[Auto-Save] Saving all player data...");
-                        dataManager.saveAllPlayers();
-                        getLogger().at(Level.INFO).log("[Auto-Save] Complete!");
-                    } catch (Exception e) {
-                        getLogger().at(Level.SEVERE).log("[Auto-Save] Failed!", e);
-                    }
-                },
-                5, // Initial delay
-                5, // Period
-                TimeUnit.MINUTES
-            )
+        autoSaveTask = com.hypixel.hytale.server.core.HytaleServer.SCHEDULED_EXECUTOR.scheduleWithFixedDelay(
+            () -> {
+                try {
+                    getLogger().at(Level.INFO).log("[Auto-Save] Saving all player data...");
+                    dataManager.saveAllPlayers();
+                    getLogger().at(Level.INFO).log("[Auto-Save] Complete!");
+                } catch (Exception e) {
+                    getLogger().at(Level.SEVERE).log("[Auto-Save] Failed!", e);
+                }
+            },
+            5, // Initial delay
+            5, // Period
+            TimeUnit.MINUTES
         );
     }
     
     @Override
     protected void shutdown() {
         getLogger().at(Level.INFO).log("NRC_RPG shutting down...");
+        
+        // Cancel auto-save task
+        if (autoSaveTask != null && !autoSaveTask.isDone()) {
+            autoSaveTask.cancel(false);
+        }
         
         // Save all player data before shutdown
         try {
@@ -103,40 +98,6 @@ public class NRCRPGPlugin extends JavaPlugin {
         }
         
         getLogger().at(Level.INFO).log("NRC_RPG shutdown complete.");
-    }
-    
-    /**
-     * Register ECS Components with proper Codecs for serialization
-     */
-    private void registerComponents() {
-        getLogger().at(Level.INFO).log("Registering ECS Components...");
-        
-        // Register with Codecs (serializable - saved to disk)
-        skillComponentType = getEntityStoreRegistry().registerComponent(
-            SkillComponent.class,
-            "NRCSkills",
-            SkillComponent.CODEC
-        );
-        
-        xpComponentType = getEntityStoreRegistry().registerComponent(
-            XPComponent.class,
-            "NRCXP",
-            XPComponent.CODEC
-        );
-        
-        statisticsComponentType = getEntityStoreRegistry().registerComponent(
-            StatisticsComponent.class,
-            "NRCStats",
-            StatisticsComponent.CODEC
-        );
-        
-        // Register without Codec (runtime only - not saved)
-        cooldownComponentType = getEntityStoreRegistry().registerComponent(
-            CooldownComponent.class,
-            CooldownComponent::new
-        );
-        
-        getLogger().at(Level.INFO).log("✓ Registered 4 components (3 serializable, 1 runtime)");
     }
     
     /**
@@ -177,21 +138,5 @@ public class NRCRPGPlugin extends JavaPlugin {
     
     public DataManager getDataManager() {
         return dataManager;
-    }
-    
-    public ComponentType<EntityStore, SkillComponent> getSkillComponentType() {
-        return skillComponentType;
-    }
-    
-    public ComponentType<EntityStore, XPComponent> getXPComponentType() {
-        return xpComponentType;
-    }
-    
-    public ComponentType<EntityStore, CooldownComponent> getCooldownComponentType() {
-        return cooldownComponentType;
-    }
-    
-    public ComponentType<EntityStore, StatisticsComponent> getStatisticsComponentType() {
-        return statisticsComponentType;
     }
 }
