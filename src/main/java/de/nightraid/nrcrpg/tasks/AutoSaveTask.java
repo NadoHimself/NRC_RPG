@@ -2,13 +2,11 @@ package de.nightraid.nrcrpg.tasks;
 
 import de.nightraid.nrcrpg.NRCRPGPlugin;
 
-/**
- * Scheduled task for auto-saving player data
- */
+import java.util.logging.Level;
+
 public class AutoSaveTask implements Runnable {
     
     private final NRCRPGPlugin plugin;
-    private boolean cancelled = false;
     
     public AutoSaveTask(NRCRPGPlugin plugin) {
         this.plugin = plugin;
@@ -16,18 +14,11 @@ public class AutoSaveTask implements Runnable {
     
     @Override
     public void run() {
-        if (cancelled || !plugin.isEnabled()) {
-            return;
-        }
-        
         try {
+            plugin.getLogger().at(Level.INFO).log("Auto-saving player data...");
             plugin.getDataManager().saveAllPlayerData();
         } catch (Exception e) {
-            NRCRPGPlugin.getPluginLogger().error("Error during auto-save!", e);
+            plugin.getLogger().at(Level.SEVERE).log("Auto-save failed!", e);
         }
-    }
-    
-    public void cancel() {
-        this.cancelled = true;
     }
 }

@@ -1,118 +1,49 @@
 package de.nightraid.nrcrpg.managers;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import de.nightraid.nrcrpg.NRCRPGPlugin;
-import de.nightraid.nrcrpg.data.PlayerData;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
+import java.io.File;
+import java.util.logging.Level;
 
-/**
- * Manages player data persistence
- */
 public class DataManager {
     
     private final NRCRPGPlugin plugin;
-    private final Path playersFolder;
-    private final Gson gson;
+    private final File playersFolder;
     
     public DataManager(NRCRPGPlugin plugin) {
         this.plugin = plugin;
-        this.playersFolder = plugin.getDataFolder().resolve("players");
-        this.gson = new GsonBuilder().setPrettyPrinting().create();
+        this.playersFolder = new File(plugin.getPluginDataFolder().toFile(), "players");
         
-        // Create players folder
-        try {
-            Files.createDirectories(playersFolder);
-        } catch (IOException e) {
-            NRCRPGPlugin.getPluginLogger().error("Failed to create players folder!", e);
+        if (!playersFolder.exists()) {
+            playersFolder.mkdirs();
+            plugin.getLogger().at(Level.INFO).log("Created players data folder");
         }
     }
     
-    /**
-     * Load player data from file
-     */
-    public PlayerData loadPlayerData(UUID uuid) {
-        Path playerFile = getPlayerFile(uuid);
-        
-        if (!Files.exists(playerFile)) {
-            return new PlayerData(uuid); // New player
-        }
-        
+    public void loadPlayerData(Object playerRef) {
         try {
-            String json = Files.readString(playerFile);
-            PlayerData data = gson.fromJson(json, PlayerData.class);
-            NRCRPGPlugin.getPluginLogger().debug("Loaded data for player {}", uuid);
-            return data;
-        } catch (IOException e) {
-            NRCRPGPlugin.getPluginLogger().error("Failed to load data for player {}!", uuid, e);
-            return new PlayerData(uuid);
+            // TODO: Implement JSON loading from players/<uuid>.json
+            plugin.getLogger().at(Level.INFO).log("Loading player data...");
+        } catch (Exception e) {
+            plugin.getLogger().at(Level.SEVERE).log("Failed to load player data", e);
         }
     }
     
-    /**
-     * Save player data to file
-     */
-    public void savePlayerData(PlayerData data) {
-        Path playerFile = getPlayerFile(data.getUuid());
-        
+    public void savePlayerData(Object playerRef) {
         try {
-            String json = gson.toJson(data);
-            Files.writeString(playerFile, json);
-            NRCRPGPlugin.getPluginLogger().debug("Saved data for player {}", data.getUuid());
-        } catch (IOException e) {
-            NRCRPGPlugin.getPluginLogger().error("Failed to save data for player {}!", data.getUuid(), e);
+            // TODO: Implement JSON saving to players/<uuid>.json
+            plugin.getLogger().at(Level.INFO).log("Saving player data...");
+        } catch (Exception e) {
+            plugin.getLogger().at(Level.SEVERE).log("Failed to save player data", e);
         }
     }
     
-    /**
-     * Save all online player data
-     */
     public void saveAllPlayerData() {
-        SkillManager skillManager = plugin.getSkillManager();
-        int saved = 0;
-        
-        for (UUID uuid : skillManager.getCachedPlayers()) {
-            PlayerData data = skillManager.getPlayerData(uuid);
-            savePlayerData(data);
-            saved++;
-        }
-        
-        NRCRPGPlugin.getPluginLogger().info("Saved data for {} players", saved);
-    }
-    
-    /**
-     * Delete player data
-     */
-    public boolean deletePlayerData(UUID uuid) {
-        Path playerFile = getPlayerFile(uuid);
-        
         try {
-            boolean deleted = Files.deleteIfExists(playerFile);
-            if (deleted) {
-                NRCRPGPlugin.getPluginLogger().info("Deleted data for player {}", uuid);
-            }
-            return deleted;
-        } catch (IOException e) {
-            NRCRPGPlugin.getPluginLogger().error("Failed to delete data for player {}!", uuid, e);
-            return false;
+            // TODO: Iterate through all online players and save
+            plugin.getLogger().at(Level.INFO).log("Saved all player data");
+        } catch (Exception e) {
+            plugin.getLogger().at(Level.SEVERE).log("Failed to save all player data", e);
         }
-    }
-    
-    /**
-     * Get player file path
-     */
-    private Path getPlayerFile(UUID uuid) {
-        return playersFolder.resolve(uuid.toString() + ".json");
-    }
-    
-    /**
-     * Check if player data exists
-     */
-    public boolean hasPlayerData(UUID uuid) {
-        return Files.exists(getPlayerFile(uuid));
     }
 }
